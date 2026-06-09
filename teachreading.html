@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity Finder — Teaching &amp; Developing Reading Skills</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F7F3ED;
+    --white: #fff;
+    --ink: #1a1a1a;
+    --muted: #666;
+    --border: #ddd5c8;
+    --border-light: #ede6da;
+    --gold: #8B6914;
+    --gold-light: #f5eed8;
+    --parchment: #f0ebe3;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ── Header ── */
+  .header {
+    background: #1a1a1a;
+    color: #F7F3ED;
+    padding: 28px 32px 22px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.35);
+  }
+  .header-inner { max-width: 1040px; margin: 0 auto; }
+  .header-eyebrow {
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #c9b99a;
+    margin-bottom: 5px;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(20px, 3.5vw, 32px);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 3px;
+  }
+  .header-sub { font-style: italic; color: #c9b99a; font-size: 15px; }
+
+  /* ── Main layout ── */
+  .main { max-width: 1040px; margin: 0 auto; padding: 26px 16px 48px; }
+
+  /* ── Search ── */
+  .search-wrap { margin-bottom: 20px; position: relative; }
+  .search-icon {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    color: #aaa; font-size: 15px; pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    padding: 9px 14px 9px 38px;
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 15.5px;
+    border: 1.5px solid #c9b99a;
+    background: #fffdf9;
+    border-radius: 5px;
+    outline: none;
+    color: var(--ink);
+    transition: border-color .15s;
+  }
+  .search-input:focus { border-color: var(--gold); }
+
+  /* ── Filter panels ── */
+  .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 22px; }
+  .filter-panel {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 16px 18px;
+  }
+  .filter-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #777;
+    margin-bottom: 11px;
+  }
+  .pill-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pill {
+    border: 1.5px solid;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Crimson Text', Georgia, serif;
+    background: transparent;
+    transition: background .13s, color .13s, opacity .13s;
+    line-height: 1.4;
+  }
+  .pill:hover { opacity: .78; }
+  .pill.active { font-weight: 600; }
+  .clear-btn {
+    border: 1.5px solid #bbb;
+    color: #999;
+    border-radius: 4px;
+    padding: 4px 11px;
+    font-size: 12.5px;
+    cursor: pointer;
+    font-family: 'Crimson Text', Georgia, serif;
+    background: transparent;
+    transition: opacity .13s;
+    display: none;
+  }
+  .clear-btn:hover { opacity: .75; }
+
+  /* ── Results bar ── */
+  .results-bar {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .results-count {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .results-desc { color: var(--muted); font-size: 14.5px; }
+
+  /* ── Cards ── */
+  #cards-container { display: grid; gap: 9px; }
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 15px 17px;
+    cursor: pointer;
+    transition: box-shadow .15s, transform .15s, border-color .15s;
+    user-select: none;
+  }
+  .card:hover { box-shadow: 0 3px 14px rgba(0,0,0,.09); transform: translateY(-1px); }
+  .card.open { border-color: var(--gold); box-shadow: 0 4px 18px rgba(139,105,20,.13); }
+  .card-header { display: flex; align-items: flex-start; gap: 13px; }
+  .id-badge {
+    color: #fff;
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 12px;
+    white-space: nowrap;
+    min-width: 38px;
+    text-align: center;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 17px;
+    line-height: 1.3;
+  }
+  .card-section-tag { font-size: 12.5px; font-style: italic; }
+  .card-page-tag {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 600;
+    background: var(--gold-light);
+    border: 1px solid #d4b86a;
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: .02em;
+  }
+  .card-focus { color: #555; font-size: 14.5px; margin-top: 3px; font-style: italic; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+  .badge {
+    border-radius: 3px;
+    padding: 2px 9px;
+    font-size: 12.5px;
+    border: 1px solid;
+  }
+  .badge-level { background: #e8f4ea; border-color: #a8d5b0; color: #2D6A4F; }
+  .badge-time { background: var(--parchment); border-color: #d5c8b5; color: #666; }
+  .chevron {
+    color: #bbb;
+    font-size: 17px;
+    margin-top: 3px;
+    transition: transform .2s;
+    flex-shrink: 0;
+  }
+  .card.open .chevron { transform: rotate(180deg); }
+
+  /* ── Card expand ── */
+  .card-detail {
+    display: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border-light);
+  }
+  .card.open .card-detail { display: block; }
+  .card-outline { font-size: 15.5px; line-height: 1.68; color: #333; margin-bottom: 8px; }
+  .card-level-raw { font-size: 13px; color: #888; }
+  .card-level-raw strong { color: #666; }
+
+  /* ── Empty state ── */
+  .empty {
+    text-align: center;
+    padding: 52px 0;
+    color: #aaa;
+    font-style: italic;
+    font-size: 17px;
+  }
+
+  /* ── Footer ── */
+  .footer { text-align: center; color: #bbb; font-size: 13px; margin-top: 36px; font-style: italic; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--parchment); }
+  ::-webkit-scrollbar-thumb { background: #c9b99a; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">Cambridge Handbooks for Language Teachers</div>
+    <h1>Teaching &amp; Developing Reading Skills</h1>
+    <div class="header-sub">Activity Finder &mdash; Peter Watkins</div>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" id="search" placeholder="Search by title, focus or description…" oninput="render()">
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+
+    <!-- Section -->
+    <div class="filter-panel">
+      <div class="filter-label">Section</div>
+      <div class="pill-wrap" id="section-pills"></div>
+    </div>
+
+    <!-- Level -->
+    <div class="filter-panel">
+      <div class="filter-label">Level (select multiple)</div>
+      <div class="pill-wrap" id="level-pills"></div>
+    </div>
+
+    <!-- Aim -->
+    <div class="filter-panel">
+      <div class="filter-label">Aim</div>
+      <div class="pill-wrap" id="aim-pills"></div>
+    </div>
+
+  </div>
+
+  <!-- Results bar -->
+  <div class="results-bar">
+    <span class="results-count" id="count">0</span>
+    <span class="results-desc" id="results-desc">activities found</span>
+  </div>
+
+  <!-- Cards -->
+  <div id="cards-container"></div>
+
+  <div class="footer" id="footer"></div>
+</main>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+
+const SECTIONS = [
+  { id:1,  title:"Preparing learners for reading",         short:"Pre-reading" },
+  { id:2,  title:"Moving beyond factual questions",        short:"While-reading" },
+  { id:3,  title:"Teaching reading strategies",            short:"Strategies" },
+  { id:4,  title:"Developing reading fluency",             short:"Fluency" },
+  { id:5,  title:"Exploiting literary texts",              short:"Literary" },
+  { id:6,  title:"Exploiting digital resources",           short:"Digital" },
+  { id:7,  title:"Exploiting texts as objects of study",   short:"Language Study" },
+  { id:8,  title:"Developing critical reading skills",     short:"Critical Reading" },
+  { id:9,  title:"Using learner-generated texts",          short:"Learner Texts" },
+  { id:10, title:"Encouraging extensive reading",          short:"Extensive Reading" },
+  { id:11, title:"Assessing reading",                      short:"Assessment" },
+  { id:12, title:"Developing expertise in teaching",       short:"Teacher Dev." },
+];
+
+const AIM_GROUPS = [
+  { id:"activation",   label:"Pre-reading & Activation",    color:"#2D6A4F" },
+  { id:"comprehension",label:"Comprehension & Response",    color:"#1D3557" },
+  { id:"strategies",   label:"Reading Strategies",          color:"#6D2B6D" },
+  { id:"fluency",      label:"Fluency & Word Recognition",  color:"#B5451B" },
+  { id:"language",     label:"Vocabulary & Language",       color:"#457B9D" },
+  { id:"critical",     label:"Critical Reading",            color:"#8B2FC9" },
+  { id:"extensive",    label:"Extensive Reading",           color:"#C9782F" },
+  { id:"assessment",   label:"Assessment",                  color:"#3D405B" },
+  { id:"teacher",      label:"Teacher Development",         color:"#6B4226" },
+];
+
+const LEVELS_DEF = [
+  { id:"A1", label:"A1 Beginner" },
+  { id:"A2", label:"A2 Elementary" },
+  { id:"B1", label:"B1 Intermediate" },
+  { id:"B2", label:"B2 Upper-Intermediate" },
+  { id:"C1", label:"C1+ Advanced" },
+];
+
+const SECTION_COLORS = [
+  "#2D6A4F","#1B4332","#40916C","#52B788","#1D3557","#457B9D",
+  "#6D2B6D","#8B2FC9","#B5451B","#C9782F","#3D405B","#6B4226"
+];
+
+function levelMap(raw) {
+  const r = raw.toLowerCase();
+  const all = ["A1","A2","B1","B2","C1"];
+  if (r.includes("any") || r.includes("dependent")) return [...all];
+  if (r.includes("young learner")) return ["A1","A2","B1"];
+  const out = [];
+  if (r.includes("a1") || r.includes("beginner")) out.push("A1");
+  if (r.includes("a2") || r.includes("elementary")) { if (!out.includes("A2")) out.push("A2"); }
+  if ((r.includes("b1") || (r.includes("intermediate") && !r.includes("upper") && !r.includes("higher"))) && !out.includes("B1")) out.push("B1");
+  if ((r.includes("b2") || r.includes("upper intermediate") || r.includes("higher intermediate")) && !out.includes("B2")) out.push("B2");
+  if ((r.includes("c1") || r.includes("advanced")) && !out.includes("C1")) out.push("C1");
+  if ((r.includes("and above") || r.includes("+")) && out.length) {
+    const minIdx = all.indexOf(out[0]);
+    return all.filter((_,i) => i >= minIdx);
+  }
+  if ((r.includes("–") || r.includes("-")) && out.length >= 1) {
+    const minI = all.indexOf(out[0]);
+    const maxI = all.indexOf(out[out.length-1]);
+    return all.filter((_,i) => i >= minI && i <= maxI);
+  }
+  return out.length ? out : [...all];
+}
+
+const PAGE_MAP = {
+  "1.1":30,"1.2":32,"1.3":34,"1.4":35,"1.5":36,"1.6":38,"1.7":39,"1.8":40,"1.9":42,"1.10":43,"1.11":45,"1.12":46,
+  "2.1":50,"2.2":51,"2.3":53,"2.4":54,"2.5":55,"2.6":57,"2.7":58,"2.8":60,"2.9":61,"2.10":62,"2.11":63,"2.12":66,"2.13":68,"2.14":69,"2.15":70,"2.16":71,
+  "3.1":75,"3.2":77,"3.3":79,"3.4":81,"3.5":82,"3.6":84,"3.7":86,"3.8":88,"3.9":89,"3.10":90,"3.11":91,"3.12":92,
+  "4.1":96,"4.2":99,"4.3":101,"4.4":103,"4.5":105,"4.6":107,"4.7":109,"4.8":111,"4.9":113,"4.10":115,"4.11":117,"4.12":118,"4.13":119,"4.14":121,"4.15":122,"4.16":123,"4.17":124,
+  "5.1":129,"5.2":131,"5.3":133,"5.4":135,"5.5":137,"5.6":138,"5.7":139,"5.8":140,"5.9":142,"5.10":143,"5.11":145,"5.12":146,"5.13":148,"5.14":151,"5.15":153,"5.16":154,"5.17":155,
+  "6.1":159,"6.2":160,"6.3":162,"6.4":164,"6.5":165,"6.6":167,"6.7":168,"6.8":170,"6.9":172,"6.10":173,"6.11":175,"6.12":177,"6.13":179,"6.14":180,"6.15":182,
+  "7.1":187,"7.2":189,"7.3":190,"7.4":193,"7.5":194,"7.6":196,"7.7":197,"7.8":199,"7.9":200,"7.10":202,"7.11":203,"7.12":205,"7.13":206,"7.14":208,
+  "8.1":213,"8.2":214,"8.3":215,"8.4":217,"8.5":219,"8.6":221,"8.7":222,"8.8":224,"8.9":226,
+  "9.1":231,"9.2":233,"9.3":236,"9.4":238,"9.5":240,"9.6":242,"9.7":243,"9.8":244,"9.9":245,"9.10":247,
+  "10.1":252,"10.2":254,"10.3":255,"10.4":256,"10.5":257,"10.6":258,"10.7":259,"10.8":260,"10.9":261,"10.10":262,"10.11":264,"10.12":266,"10.13":267,
+  "11.1":271,"11.2":272,"11.3":273,"11.4":274,"11.5":276,"11.6":278,"11.7":280,"11.8":281,"11.9":283,
+  "12.1":287,"12.2":289,"12.3":291,"12.4":292,"12.5":294,"12.6":296,"12.7":297,"12.8":299,
+};
+
+const ACTIVITIES_RAW = [
+  // Section 1
+  {id:"1.1",s:1,title:"Visualization",lr:"Any (see Notes)",aim:"activation",focus:"Promote affective engagement with a text through guided visualization and music",time:"Up to 15 min",outline:"Learners close their eyes and are guided through imaginative questions linked to the text, accompanied by music, before reading."},
+  {id:"1.2",s:1,title:"Previewing a text by its vocabulary",lr:"Any",aim:"activation",focus:"Preview a text by deeply engaging with its key vocabulary",time:"15 min",outline:"Key words are given to learners who brainstorm associations, collocations and emotions before reading."},
+  {id:"1.3",s:1,title:"Previewing a text through role play",lr:"Intermediate and above (B1+)",aim:"activation",focus:"Promote affective engagement with a text via a pre-reading role play",time:"30 min",outline:"Learners perform a role play based on the themes of the text before reading, building affective connection."},
+  {id:"1.4",s:1,title:"A quick glimpse",lr:"Any",aim:"activation",focus:"Preview a text through a timed 15-second exposure to images and vocabulary",time:"15 min",outline:"Learners see an information sheet for 15 seconds and then reconstruct and predict the text from memory."},
+  {id:"1.5",s:1,title:"Simplified to authentic",lr:"Intermediate and above (B1+)",aim:"activation",focus:"Preview an authentic text by first reading a simplified version",time:"30 min",outline:"Learners read a simplified version of a text before moving on to the authentic version."},
+  {id:"1.6",s:1,title:"L1 to L2 reading",lr:"Any",aim:"activation",focus:"Preview a challenging text by reading a summary in the learners' first language",time:"10 min",outline:"Learners read an L1 summary of the text before reading the full L2 version. Best for monolingual groups."},
+  {id:"1.7",s:1,title:"Predicting from pictures",lr:"Elementary and above (A2+)",aim:"activation",focus:"Preview a text through images, some relevant and some distractors",time:"15 min",outline:"Learners use a set of pictures (including distractors) to construct a predicted narrative before reading."},
+  {id:"1.8",s:1,title:"Analyzing pictures",lr:"Elementary and above (A2+)",aim:"activation",focus:"Preview a text by analyzing its accompanying images closely",time:"10 min",outline:"Before reading, learners analyze text illustrations using guided questions about people, objects and places."},
+  {id:"1.9",s:1,title:"Predicting from text type",lr:"Intermediate and above (B1+)",aim:"activation",focus:"Make predictions about a text based on awareness of its genre and text type",time:"10 min",outline:"Learners predict structural and content features of the text based on their genre knowledge."},
+  {id:"1.10",s:1,title:"Predicting from the reactions of others",lr:"Intermediate and above (B1+)",aim:"activation",focus:"Preview a text by considering recorded reactions of other readers",time:"20 min",outline:"Learners hear or read brief comments from previous readers of the text and predict its content."},
+  {id:"1.11",s:1,title:"What I want to find out",lr:"Intermediate and above (B1+)",aim:"activation",focus:"Set personal goals for reading by specifying what information to find out",time:"15 min",outline:"Learners complete a KWL-style table (what I know / believe / want to find out) before reading."},
+  {id:"1.12",s:1,title:"What we believe",lr:"Intermediate and above (B1+)",aim:"activation",focus:"Use background knowledge to support comprehension and build on existing knowledge",time:"20 min",outline:"Class elicits beliefs about the topic; learners read to confirm or contradict them."},
+  // Section 2
+  {id:"2.1",s:2,title:"Using symbols",lr:"Any, dependent on the text",aim:"comprehension",focus:"Record personal reactions to a text using symbols (✓ × ? !)",time:"30 min",outline:"Learners annotate a text with symbols to mark what they agree with, disagree with, don't understand, or find surprising."},
+  {id:"2.2",s:2,title:"Following instructions",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Read a text in detail to follow a set of instructions",time:"15–20 min",outline:"Learners complete a drawing or task by following detailed written instructions in the text."},
+  {id:"2.3",s:2,title:"Draw it",lr:"Any – appropriate for young learners",aim:"comprehension",focus:"Respond creatively to a text by drawing a picture",time:"30 min",outline:"Young learners create a drawing in response to what they have read, making personal meaning from the text."},
+  {id:"2.4",s:2,title:"Retelling a text",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Combine reading, speaking and listening skills through retelling",time:"45 min",outline:"Learners read a text in sections, then retell the content to a partner who has not read it."},
+  {id:"2.5",s:2,title:"Finding the right phrase",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Analyze both the structure and content of a text using sentence stems",time:"30 min",outline:"Learners complete provided sentence stems (e.g. 'The writer argues that…') for different sections of the text."},
+  {id:"2.6",s:2,title:"Preparing a multimedia text",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Discuss both the content and stylistic features of a text",time:"45 min",outline:"Learners decide what images, video and audio would enhance the text if it were published digitally."},
+  {id:"2.7",s:2,title:"Shallow to deep",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Make inferences and demonstrate deeper understanding beyond surface comprehension",time:"30 min",outline:"Learners answer questions in sequence from factual recall to inference and evaluation, moving from shallow to deep."},
+  {id:"2.8",s:2,title:"Editing a text",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Identify unnecessary or irrelevant information in a text",time:"30 min",outline:"Learners edit a passage of text by removing parts they judge to be irrelevant or repetitive."},
+  {id:"2.9",s:2,title:"Writing a summary in bullet points",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Identify the most important information in a text",time:"30 min",outline:"Learners read a text and write a bullet-point summary, selecting only the most important points."},
+  {id:"2.10",s:2,title:"Writing a summary in 21 words",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Identify key information by writing a constrained summary",time:"30 min",outline:"Learners write a summary of the text in precisely 21 words, pushing them to prioritize."},
+  {id:"2.11",s:2,title:"Read a handful",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Create ongoing running summaries of a text to support comprehension",time:"30 min",outline:"Learners read and immediately recall sections of a text, building a cumulative oral summary as they go."},
+  {id:"2.12",s:2,title:"Making notes",lr:"Higher intermediate and above (B2+)",aim:"comprehension",focus:"Group information from a text under given headings and create structured notes",time:"30 min",outline:"Learners are given headings and make notes under each, based on a detailed reading of the text."},
+  {id:"2.13",s:2,title:"This text is … because …",lr:"Higher intermediate and above (B2+)",aim:"comprehension",focus:"Combine reading, speaking and listening by evaluating and justifying text choices",time:"30 min",outline:"Learners choose a text and justify their characterization of it using given sentence stems."},
+  {id:"2.14",s:2,title:"Perhaps … maybe",lr:"Intermediate and above (B1+)",aim:"strategies",focus:"Monitor understanding and distinguish between certainty and inference while reading",time:"30 min",outline:"Learners categorize text statements as what they are sure about, think may be true, or are unsure about."},
+  {id:"2.15",s:2,title:"Role play",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Combine reading, speaking and listening skills through a post-reading role play",time:"30 min",outline:"Learners perform a role play based on events or characters in the text they have read."},
+  {id:"2.16",s:2,title:"Reading as preparation for speaking or writing",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Use reading as a source of information for a speaking or writing task",time:"Open-ended",outline:"Learners read on a topic and then use the information as the basis for a presentation, discussion or piece of writing."},
+  // Section 3
+  {id:"3.1",s:3,title:"I sometimes …",lr:"Intermediate and above (B1+)",aim:"strategies",focus:"Discuss and reflect on the reading strategies learners already use",time:"20 min",outline:"Learners discuss their reading habits and strategies using prompt cards beginning with 'I sometimes…'."},
+  {id:"3.2",s:3,title:"Look into my mind",lr:"Intermediate and above (B1+)",aim:"strategies",focus:"Share reading strategy use by thinking aloud while reading",time:"30 min",outline:"The teacher models thinking aloud while reading; learners then try the same in pairs, sharing their mental processes."},
+  {id:"3.3",s:3,title:"Annotating a text",lr:"Intermediate and above (B1+)",aim:"strategies",focus:"Record and share reading strategy use through annotation while reading",time:"30 min",outline:"Learners annotate a text as they read, recording the strategies they use, and then compare annotations."},
+  {id:"3.4",s:3,title:"Traffic lights",lr:"Any",aim:"strategies",focus:"Monitor comprehension using a traffic light scheme while reading",time:"30–60 min",outline:"Learners mark text sections red/amber/green to show their level of comprehension as they read."},
+  {id:"3.5",s:3,title:"Group reading",lr:"Higher intermediate and above (B2+)",aim:"strategies",focus:"Read collaboratively and share strategy use within a group",time:"30 min",outline:"Small groups work together to read a text, sharing strategies and helping each other understand."},
+  {id:"3.6",s:3,title:"Questioning the text and author",lr:"Intermediate and above (B1+)",aim:"strategies",focus:"Analyze the structure and content of a text by questioning it and its author",time:"35 min",outline:"Learners critique a text by generating and discussing questions about what the writer did and why."},
+  {id:"3.7",s:3,title:"Breaking it into bits",lr:"Elementary and above (A2+)",aim:"strategies",focus:"Use existing knowledge of word roots and affixes to work out unknown word meanings",time:"15 min",outline:"Learners study common word roots and prefixes/suffixes to decode the meaning of unfamiliar vocabulary."},
+  {id:"3.8",s:3,title:"Made-up words",lr:"Higher intermediate and above (B2+)",aim:"strategies",focus:"Practise inferring the meaning of unknown words from context",time:"25 min",outline:"Learners encounter invented words in a text and use context clues to infer their meanings."},
+  {id:"3.9",s:3,title:"The next word",lr:"Any",aim:"strategies",focus:"Make predictions about lexical and grammatical choices as a text is revealed word by word",time:"25 min",outline:"A text is revealed a few words at a time; learners predict what comes next, building awareness of language patterns."},
+  {id:"3.10",s:3,title:"Three words",lr:"Elementary and above (A2+)",aim:"strategies",focus:"Decide when to infer meaning and when to look up unknown words",time:"25 min",outline:"Learners may only look up a maximum of three words while reading, forcing strategic decisions about which to investigate."},
+  {id:"3.11",s:3,title:"What I know …",lr:"Intermediate and above (B1+)",aim:"strategies",focus:"Set goals and monitor comprehension by categorizing understanding as text is read",time:"30 min",outline:"Learners divide the text into what they know, are not sure about, and don't understand, then set goals."},
+  {id:"3.12",s:3,title:"Add the box",lr:"Intermediate and above (B1+)",aim:"strategies",focus:"Summarize sections of a text and predict the content of the next section",time:"30 min",outline:"Learners summarize each section of a text in a box and predict the content of the following section."},
+  // Section 4
+  {id:"4.1",s:4,title:"Snap",lr:"Beginner–Elementary (A1–A2)",aim:"fluency",focus:"Rapidly recognize common words through a card-matching game",time:"10 min",outline:"Learners play a snap-style card game where they match identical common words as quickly as possible."},
+  {id:"4.2",s:4,title:"Pelmanism",lr:"Beginner–Elementary (A1–A2)",aim:"fluency",focus:"Rapidly recognize common words through a memory-matching game",time:"15 min",outline:"Learners play a pelmanism (memory) game, turning over cards to match identical common words."},
+  {id:"4.3",s:4,title:"Reading Bingo",lr:"Beginner–Elementary (A1–A2)",aim:"fluency",focus:"Rapidly recognize common words through a Bingo game",time:"15 min",outline:"Learners play Bingo, crossing off common words on a grid when they hear or see them."},
+  {id:"4.4",s:4,title:"Find the pairs",lr:"Beginner and above (A1+)",aim:"fluency",focus:"Rapidly recognize common words by finding pairs in a grid under time pressure",time:"10 min",outline:"Learners scan a word grid to find identical pairs as quickly as possible."},
+  {id:"4.5",s:4,title:"Rogue words",lr:"Any",aim:"fluency",focus:"Rapidly distinguish real words from invented words in a list",time:"10 min",outline:"Learners are given a list of words and must quickly separate real words from made-up ones."},
+  {id:"4.6",s:4,title:"PowerPoint pandemonium",lr:"Any",aim:"fluency",focus:"Rapidly decode words using timed slides and morphological prompts",time:"10 min",outline:"Words with common affixes are flashed on slides; learners must decide quickly if the affixes are used correctly."},
+  {id:"4.7",s:4,title:"Quick flash",lr:"Any",aim:"fluency",focus:"Rapidly decode and remember words shown briefly on screen",time:"10 min",outline:"Words are flashed on screen very briefly; learners decode and remember them against a time limit."},
+  {id:"4.8",s:4,title:"Odd one out race",lr:"Elementary and above (A2+)",aim:"fluency",focus:"Develop sight vocabulary by identifying the odd word in a set of collocations",time:"15 min",outline:"Learners race to identify the word that doesn't collocate with the others in a set."},
+  {id:"4.9",s:4,title:"Find the changes",lr:"Any, dependent on the text",aim:"fluency",focus:"Develop fluency by rereading a previously studied text that has been altered",time:"20–30 min",outline:"Learners reread a text they have already studied, looking for deliberate changes introduced by the teacher."},
+  {id:"4.10",s:4,title:"Read that again",lr:"Elementary and above (A2+)",aim:"fluency",focus:"Develop fluency by rereading a text within a fixed time and measuring improvement",time:"10 min",outline:"Learners are given a fixed time to read a text, then given the same time to reread it and note improvement."},
+  {id:"4.11",s:4,title:"Upgrade",lr:"Elementary and above (A2+)",aim:"fluency",focus:"Develop reading fluency by rereading progressively more challenging texts",time:"10–15 min",outline:"Learners read and reread sections of text; on each rereading they move on to a slightly harder passage."},
+  {id:"4.12",s:4,title:"All together",lr:"Beginner–Intermediate (A1–B1)",aim:"fluency",focus:"Help weaker readers develop fluency by reading aloud chorally after preparation",time:"25 min",outline:"Learners prepare silently, then read chorally as a group, supported by stronger readers."},
+  {id:"4.13",s:4,title:"Follow me",lr:"Beginner–Elementary (A1–A2)",aim:"fluency",focus:"Develop reading fluency by following a text as it is read aloud",time:"10 min",outline:"Learners follow a text with their finger as it is read aloud, developing phonological–orthographic connections."},
+  {id:"4.14",s:4,title:"The looking back quiz",lr:"Any",aim:"fluency",focus:"Develop fluency through rereading and rapid retrieval of information",time:"15 min",outline:"Learners answer quick comprehension questions that require rereading; speed is encouraged."},
+  {id:"4.15",s:4,title:"The magazine quiz",lr:"Intermediate and above (B2+)",aim:"fluency",focus:"Develop fluency with authentic magazine-style material",time:"30 min",outline:"Learners skim and scan through an authentic magazine to answer quiz questions as fast as possible."},
+  {id:"4.16",s:4,title:"What I remember",lr:"Elementary and above (A2+)",aim:"fluency",focus:"Develop fluency through rereading and personal recall of a text",time:"20 min",outline:"Learners read a text, close it, and write down everything they remember; then reread to check."},
+  {id:"4.17",s:4,title:"Who said that?",lr:"Elementary and above (A2+)",aim:"fluency",focus:"Build exposure to the L2 script by reading and attributing quotations",time:"20 min",outline:"Learners quickly read a set of quotations and match them to speakers or contexts."},
+  // Section 5
+  {id:"5.1",s:5,title:"Questions, questions, questions",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Review a reading experience by generating and answering questions about a literary text",time:"30 min",outline:"Learners generate their own questions about the literary text and discuss answers in small groups."},
+  {id:"5.2",s:5,title:"Literature circles",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Read and discuss a literary text collaboratively in a structured literature circle",time:"45 min",outline:"Learners take on different roles (summarizer, questioner, connector, etc.) to guide group discussion of a text."},
+  {id:"5.3",s:5,title:"Ask the author",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Reflect on a reading experience and the choices made by a writer",time:"30 min",outline:"Learners write questions they would like to ask the author, then role-play answering them as the author."},
+  {id:"5.4",s:5,title:"Using a script",lr:"Elementary and above (A2+)",aim:"fluency",focus:"Read aloud a prepared script of a literary text in performance",time:"30 min",outline:"Learners prepare and then read aloud a scripted extract, focusing on expression and prosody."},
+  {id:"5.5",s:5,title:"Listening to the text",lr:"Any",aim:"fluency",focus:"Practise written and phonological correspondences by listening and reading simultaneously",time:"20 min",outline:"Learners follow the written text as they listen to a recording, developing phonological awareness."},
+  {id:"5.6",s:5,title:"Read and talk, read and talk",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Support reading comprehension through interaction — reading in alternating chunks and discussing",time:"30 min",outline:"Learners alternate between reading short passages and talking about what they have read in pairs."},
+  {id:"5.7",s:5,title:"Using graphic novels",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Support reading with images by using a graphic novel or comic version of a literary text",time:"45 min",outline:"Learners read a graphic novel version of a text first, then approach the original written version."},
+  {id:"5.8",s:5,title:"The best opening line, ever",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Encourage reading by comparing and evaluating opening lines from a range of literary texts",time:"20 min",outline:"Learners read opening lines from various books and vote on the best, then read on to see if they want to continue."},
+  {id:"5.9",s:5,title:"This doesn't belong here",lr:"Any, depending on the texts used",aim:"language",focus:"Reflect on stylistic choices in literary texts by identifying intrusive sentences",time:"20 min",outline:"A sentence that doesn't fit stylistically is inserted into a text; learners find it and explain why it doesn't belong."},
+  {id:"5.10",s:5,title:"Sentence detective",lr:"Intermediate and above (B1+)",aim:"language",focus:"Analyze sentence-level language choices in a literary text",time:"25 min",outline:"Learners examine individual sentences from a literary text closely, discussing the writer's language choices."},
+  {id:"5.11",s:5,title:"Watch and read",lr:"Upper intermediate and above (B2+)",aim:"comprehension",focus:"Compare a written literary text with its film adaptation",time:"45 min",outline:"Learners watch a scene from a film adaptation and compare it with the written version of the same scene."},
+  {id:"5.12",s:5,title:"Preparing a trailer",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Identify key parts of a text by creating a book trailer",time:"45 min",outline:"Learners select key scenes and language from a book to create a short promotional trailer."},
+  {id:"5.13",s:5,title:"Summary charts",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Analyze characters in literature using a structured summary chart",time:"30 min",outline:"Learners complete a structured chart tracking characters' actions, feelings and development through the text."},
+  {id:"5.14",s:5,title:"Graphic organizer summary",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Analyze the structure of a text using a visual graphic organizer",time:"30 min",outline:"Learners map the plot structure or argument of a text onto a graphic organizer template."},
+  {id:"5.15",s:5,title:"Which character would you most like to …",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Analyze and discuss character traits in a literary text",time:"25 min",outline:"Learners vote on which character from a text they would most like to meet/work with/be friends with, and justify."},
+  {id:"5.16",s:5,title:"The story the author didn't write",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Analyze critical incidents in a story by imagining alternative narratives",time:"30 min",outline:"Learners identify a key decision point in the story and write or discuss what might have happened differently."},
+  {id:"5.17",s:5,title:"The sequel",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Discuss possibilities for further stories based on the reading of a literary text",time:"30 min",outline:"After finishing a text, learners plan and discuss what might happen next — the sequel."},
+  // Section 6
+  {id:"6.1",s:6,title:"A quick experiment",lr:"Any",aim:"comprehension",focus:"Discuss the differences between print and digital reading experiences",time:"20 min",outline:"Learners conduct a short reading experiment comparing their reading on screen vs. on paper."},
+  {id:"6.2",s:6,title:"Same or different?",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Discuss the differences between print and digital versions of the same story",time:"30 min",outline:"Learners compare the online and print versions of the same article, noting differences in presentation and content."},
+  {id:"6.3",s:6,title:"How are they different?",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Compare print and digital versions of the same story in detail",time:"30 min",outline:"Learners do a detailed comparative analysis of the same story in print and digital formats."},
+  {id:"6.4",s:6,title:"Design it!",lr:"Any",aim:"comprehension",focus:"Respond creatively to a text by designing a web page or digital presentation",time:"30 min",outline:"Learners respond to a text by designing how they would present it as a digital resource."},
+  {id:"6.5",s:6,title:"Comment on the comments",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Understand comments made online about a text and discuss their validity",time:"30 min",outline:"Learners read online reader comments on a text and analyze and respond to them."},
+  {id:"6.6",s:6,title:"Predicting from others' reactions",lr:"Upper intermediate and above (B2+)",aim:"activation",focus:"Predict content from social media reactions and become familiar with informal digital writing",time:"25 min",outline:"Learners read social media reactions to a digital text and predict the content before reading."},
+  {id:"6.7",s:6,title:"Background check",lr:"Elementary and above (A2+)",aim:"critical",focus:"Cross-check information in a text against other online sources",time:"25 min",outline:"Learners read an article and then check key facts using other websites, developing source evaluation skills."},
+  {id:"6.8",s:6,title:"Edit it",lr:"Upper intermediate and above (B2+)",aim:"critical",focus:"Develop critical reading skills by editing a manipulative or biased online text",time:"35 min",outline:"Learners are given a biased or inaccurate online text and tasked with editing it to be more balanced."},
+  {id:"6.9",s:6,title:"Rate the links",lr:"Intermediate and above (B1+)",aim:"critical",focus:"Develop sensitivity to the usefulness and reliability of hyperlinks in a text",time:"25 min",outline:"Learners evaluate the hyperlinks in a digital text for relevance and reliability."},
+  {id:"6.10",s:6,title:"Search results",lr:"Intermediate and above (B1+)",aim:"critical",focus:"Identify the most useful results of an online search and evaluate them",time:"25 min",outline:"Learners compare search results for a given query and evaluate which sources are most reliable."},
+  {id:"6.11",s:6,title:"Find it",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Find information from non-linearly organized sources such as websites",time:"25 min",outline:"Learners navigate a website to find specific information, developing non-linear digital reading skills."},
+  {id:"6.12",s:6,title:"Learner research",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Use information needs to stimulate reading in the target language",time:"45 min",outline:"Learners use their own questions about a topic to guide research reading online in the L2."},
+  {id:"6.13",s:6,title:"Predicting the conversation",lr:"Elementary and above (A2+)",aim:"activation",focus:"Discuss the content and style of instant message conversations before reading",time:"20 min",outline:"Learners are given a context and predict what will be said in an instant messaging conversation."},
+  {id:"6.14",s:6,title:"Following the conversation",lr:"Elementary and above (A2+)",aim:"language",focus:"Develop awareness of discourse and pragmatic features of instant messaging",time:"25 min",outline:"Learners analyze the language, tone and conventions of an authentic instant messaging conversation."},
+  {id:"6.15",s:6,title:"Phone detective",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Understand implicit messages in a text message conversation",time:"25 min",outline:"Learners read a phone message conversation and make inferences about the unstated relationship and context."},
+  // Section 7
+  {id:"7.1",s:7,title:"Vocabulary swap",lr:"Intermediate and above (B1+)",aim:"language",focus:"Study vocabulary from a text by replacing words with synonyms and evaluating the effects",time:"30 min",outline:"Learners replace key words in a text with alternatives and discuss the difference in meaning and effect."},
+  {id:"7.2",s:7,title:"Translating phrases",lr:"Any, dependent on the text",aim:"language",focus:"Study chunks of language from a text through translation",time:"25 min",outline:"Learners select and translate phrases from the text, focusing on collocations and multi-word expressions."},
+  {id:"7.3",s:7,title:"Rebuilding a text from fragments",lr:"Elementary and above (A2+)",aim:"language",focus:"Study the cohesion and linking within a text by reconstructing it from scrambled parts",time:"30 min",outline:"Learners reassemble a cut-up text, attending carefully to cohesive devices and logical flow."},
+  {id:"7.4",s:7,title:"Narrow reading and vocabulary",lr:"Intermediate and above (B1+)",aim:"language",focus:"Recycle and deepen vocabulary knowledge by reading multiple texts on the same topic",time:"45 min",outline:"Learners read several short texts on the same topic, tracking how key vocabulary is used across them."},
+  {id:"7.5",s:7,title:"One sentence to many sentences",lr:"Elementary and above (A2+)",aim:"language",focus:"Understand complex sentences by breaking them into their component clauses",time:"25 min",outline:"Learners take a long, complex sentence from a text and rewrite it as several shorter sentences."},
+  {id:"7.6",s:7,title:"Grammar race",lr:"Any",aim:"language",focus:"Identify key grammatical elements in sentences under time pressure",time:"15 min",outline:"Learners race to identify specific grammatical features (e.g. relative clauses) in a text."},
+  {id:"7.7",s:7,title:"Chasing the meaning",lr:"Elementary and above (A2+)",aim:"language",focus:"Study backward and forward referencing devices (pronouns, demonstratives, etc.)",time:"25 min",outline:"Learners trace reference chains in a text, identifying what each pronoun or reference word points to."},
+  {id:"7.8",s:7,title:"Arrows",lr:"Any",aim:"language",focus:"Study backward and forward referencing devices using visual arrows",time:"20 min",outline:"Learners draw arrows on a text to show how referring expressions point back and forward to what they refer to."},
+  {id:"7.9",s:7,title:"Focus on linkers",lr:"Elementary and above (A2+)",aim:"language",focus:"Study discourse marking devices and how they signal text organization",time:"25 min",outline:"Learners identify and analyze the linkers and discourse markers in a text, discussing what they signal."},
+  {id:"7.10",s:7,title:"Study the genre",lr:"Intermediate and above (B1+)",aim:"language",focus:"Study the structural conventions of a text type or genre",time:"30 min",outline:"Learners analyze the structural and linguistic conventions of the genre of a text (e.g. news report, complaint letter)."},
+  {id:"7.11",s:7,title:"Making changes",lr:"Intermediate and above (B1+)",aim:"language",focus:"Study the impact of grammar and vocabulary choices by altering them and noting the effect",time:"30 min",outline:"Learners change specific grammar or vocabulary features of a text and discuss how this changes meaning or tone."},
+  {id:"7.12",s:7,title:"Mixed lines",lr:"Intermediate and above (B1+)",aim:"language",focus:"Read and reread lines of text for detailed comprehension by identifying interspersed alien lines",time:"25 min",outline:"Lines from a different text are mixed into the target text; learners must identify which lines don't belong."},
+  {id:"7.13",s:7,title:"Who, what and how",lr:"Intermediate and above (B1+)",aim:"language",focus:"Study the structure of a text by analyzing participants, processes and circumstances",time:"30 min",outline:"Learners analyze a text by identifying who does what, to whom, and how — a systemic functional analysis."},
+  {id:"7.14",s:7,title:"Using graphic organizers",lr:"Intermediate and above (B1+)",aim:"language",focus:"Study the structure of a text using a graphic organizer",time:"30 min",outline:"Learners complete a graphic organizer that maps the organizational structure of a text."},
+  // Section 8
+  {id:"8.1",s:8,title:"Investigate",lr:"Intermediate and above (B1+)",aim:"critical",focus:"Study persuasive devices in texts by investigating the writer's techniques",time:"30 min",outline:"Learners identify specific persuasive language features in a text and discuss how they influence the reader."},
+  {id:"8.2",s:8,title:"Investigate (EAP)",lr:"Upper intermediate and above (B2+)",aim:"critical",focus:"Analyze the strength of an argument in an academic text",time:"35 min",outline:"An EAP version: learners analyze claim, evidence and counter-argument structure in academic writing."},
+  {id:"8.3",s:8,title:"Cross examination",lr:"Intermediate and above (B1+)",aim:"critical",focus:"Analyze the strength of an argument by cross-examining the writer's claims",time:"30 min",outline:"Learners 'cross-examine' a text, challenging each main claim with probing questions."},
+  {id:"8.4",s:8,title:"Facts / opinions / reactions",lr:"Upper intermediate and above (B2+)",aim:"critical",focus:"Separate facts, opinions and personal reactions within a text",time:"30 min",outline:"Learners categorize statements from the text as factual, opinion-based or personal reaction."},
+  {id:"8.5",s:8,title:"Replacing words",lr:"Intermediate and above (B1+)",aim:"critical",focus:"Study how vocabulary choices position the reader by swapping evaluative words",time:"30 min",outline:"Learners replace evaluative/loaded vocabulary with more neutral alternatives and discuss the change in effect."},
+  {id:"8.6",s:8,title:"Two views",lr:"Intermediate and above (B1+)",aim:"critical",focus:"Analyze texts for bias by comparing two different accounts of the same event",time:"35 min",outline:"Learners read two accounts of the same event and compare the language and perspective of each."},
+  {id:"8.7",s:8,title:"The tourist trap",lr:"Upper intermediate and above (B2+)",aim:"critical",focus:"Study features of persuasive writing in promotional texts",time:"30 min",outline:"Learners analyze persuasive techniques in a tourist promotion text, such as hyperbole, selective detail, and vagueness."},
+  {id:"8.8",s:8,title:"What's changed?",lr:"Intermediate and above (B1+)",aim:"critical",focus:"Analyze the impact of grammatical and lexical choices by comparing two versions of a text",time:"30 min",outline:"Learners compare two versions of a text — one with different grammar/vocabulary choices — and discuss the effects."},
+  {id:"8.9",s:8,title:"Analyze that!",lr:"Intermediate and above (B1+)",aim:"critical",focus:"Analyze the values and assumptions implicit in learners' coursebook texts",time:"30 min",outline:"Learners critically analyze a text from their coursebook, examining whose voice is heard and what values are promoted."},
+  // Section 9
+  {id:"9.1",s:9,title:"Beginner reading",lr:"Beginner and above (A1+)",aim:"comprehension",focus:"Read at text level for beginner readers using learner-generated short texts",time:"20 min",outline:"Beginner learners write very simple texts about themselves; these are exchanged and read by classmates."},
+  {id:"9.2",s:9,title:"Who is who?",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Combine writing and reading skills by guessing identities from written descriptions",time:"25 min",outline:"Learners write descriptions of themselves anonymously; classmates read and try to identify the writers."},
+  {id:"9.3",s:9,title:"Read and comment",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Combine writing and reading skills through peer feedback on written texts",time:"30 min",outline:"Learners write short texts, post them, and read and comment on each other's work."},
+  {id:"9.4",s:9,title:"Questions to story",lr:"Intermediate and above (B1+)",aim:"activation",focus:"Prepare learners for reading by having them write a similar text beforehand",time:"40 min",outline:"Learners answer a set of questions to generate content, then read a text that answers the same questions."},
+  {id:"9.5",s:9,title:"Paper text messages",lr:"Any",aim:"comprehension",focus:"Read and respond to co-construct a text with a partner via written exchange",time:"20 min",outline:"Pairs exchange 'paper text messages' — short written notes — simulating a messaging conversation."},
+  {id:"9.6",s:9,title:"Using voice recognition software",lr:"Any",aim:"fluency",focus:"Develop awareness of the sounds of words by using voice recognition software",time:"20 min",outline:"Learners speak words or sentences into voice recognition software and see how well the software decodes them."},
+  {id:"9.7",s:9,title:"Read my text",lr:"Elementary and above (A2+)",aim:"strategies",focus:"Identify where reading difficulties may arise for a reader in a particular text",time:"25 min",outline:"Learners analyze a text they have written from a reader's perspective, identifying potentially difficult passages."},
+  {id:"9.8",s:9,title:"Whose is it?",lr:"Intermediate and above (B1+)",aim:"comprehension",focus:"Provide motivation for reading through curiosity about classmates' writing",time:"20 min",outline:"Learners write on a shared topic; texts are posted anonymously and read to identify authorship."},
+  {id:"9.9",s:9,title:"Next year's class",lr:"Upper intermediate and above (B2+)",aim:"comprehension",focus:"Combine skim reading and detailed reading by creating a class resource for future learners",time:"45 min",outline:"Learners skim and then read a set of texts in detail to write up a summary resource for next year's class."},
+  {id:"9.10",s:9,title:"Photo captions",lr:"Elementary and above (A2+)",aim:"comprehension",focus:"Motivate reading through learner-generated captions for class photos",time:"25 min",outline:"Learners write captions for class photos; these are then read and discussed by classmates."},
+  // Section 10
+  {id:"10.1",s:10,title:"The benefits of reading",lr:"Elementary and above (A2+)",aim:"extensive",focus:"Discuss the benefits of extensive reading to motivate learners to read more",time:"20 min",outline:"Teacher-led discussion on why reading extensively in L2 is beneficial; learners share attitudes and experiences."},
+  {id:"10.2",s:10,title:"Taking reading to the learners",lr:"Any",aim:"extensive",focus:"Bring a range of reading materials to learners to encourage extensive reading",time:"20 min",outline:"The teacher brings a large selection of graded readers and authentic texts to class for learners to browse and select."},
+  {id:"10.3",s:10,title:"The first page",lr:"Intermediate and above (B1+)",aim:"extensive",focus:"Encourage engagement with extensive reading by sharing and evaluating opening pages",time:"30 min",outline:"Learners read the opening page of several books and decide which they would most like to read."},
+  {id:"10.4",s:10,title:"The readability test",lr:"Any",aim:"extensive",focus:"Ensure texts chosen for extensive reading are at an appropriate level",time:"20 min",outline:"Learners apply a simple readability test to a text to check it is at a comfortable reading level for them."},
+  {id:"10.5",s:10,title:"Let's fly to Mars",lr:"Elementary and above (A2+)",aim:"extensive",focus:"Use rewards and class goals to promote extensive reading",time:"Ongoing",outline:"A class works toward a reading goal (e.g. collecting pages to 'fly to Mars'), with individual reading logged."},
+  {id:"10.6",s:10,title:"Reading log",lr:"Intermediate and above (B1+)",aim:"extensive",focus:"Encourage extensive reading by maintaining and sharing a reading log",time:"Ongoing",outline:"Learners keep a personal reading log of books read, sharing and recommending to peers."},
+  {id:"10.7",s:10,title:"But would it be a good film?",lr:"Intermediate and above (B1+)",aim:"extensive",focus:"Promote extensive reading by discussing the 'filmability' of a book",time:"30 min",outline:"After reading, learners discuss whether the book would make a good film and what would need to change."},
+  {id:"10.8",s:10,title:"Casting the film version",lr:"Upper intermediate and above (B2+)",aim:"extensive",focus:"Promote extensive reading through casting a film version of the book",time:"30 min",outline:"Learners discuss which actors they would cast in the film adaptation of the book and justify their choices."},
+  {id:"10.9",s:10,title:"Writing the script",lr:"Intermediate and above (B1+)",aim:"extensive",focus:"Promote extensive reading by writing a script for a key scene from the book",time:"45 min",outline:"Learners select a key scene and write a screenplay version of it, combining detailed reading with creative writing."},
+  {id:"10.10",s:10,title:"Don't judge a book by its cover",lr:"Any",aim:"extensive",focus:"Promote extensive reading through evaluating and discussing book covers",time:"20 min",outline:"Learners examine book covers and predict the content; they discuss whether they would choose the book to read."},
+  {id:"10.11",s:10,title:"Retell it",lr:"Intermediate and above (B1+)",aim:"extensive",focus:"Encourage extensive reading through retelling a book to classmates",time:"30 min",outline:"Learners give a short oral retelling of the book they have been reading to the rest of the class."},
+  {id:"10.12",s:10,title:"The shortlist",lr:"Intermediate and above (B1+)",aim:"extensive",focus:"Encourage extensive reading through listening to peers talk about their own reading",time:"30 min",outline:"Learners nominate books for a class shortlist, presenting their case; the class votes on the winner."},
+  {id:"10.13",s:10,title:"Pictures of my reading",lr:"Any",aim:"extensive",focus:"Notice the variety of texts that can be engaged with beyond books",time:"20 min",outline:"Learners photograph texts they encounter in daily life and share them with the class."},
+  // Section 11
+  {id:"11.1",s:11,title:"Ten texts",lr:"Any",aim:"assessment",focus:"Encourage learners to read widely across different text types",time:"30 min",outline:"Learners are challenged to read ten different text types over a period of time; progress is tracked and shared."},
+  {id:"11.2",s:11,title:"Reading to write",lr:"Intermediate and above (B1+)",aim:"assessment",focus:"Combine reading with writing as an authentic form of assessment",time:"45 min",outline:"Learners read a text and produce a written response (summary, review, letter) as evidence of comprehension."},
+  {id:"11.3",s:11,title:"Free recall",lr:"Any",aim:"assessment",focus:"Recall and record information from a text immediately after reading",time:"20 min",outline:"After reading, learners write down everything they can recall without referring back; this is used diagnostically."},
+  {id:"11.4",s:11,title:"Portfolios",lr:"Any",aim:"assessment",focus:"Encourage extensive reading and reflect on progress through a reading portfolio",time:"Ongoing",outline:"Learners collect evidence of their reading over time in a portfolio, including responses, logs and reflections."},
+  {id:"11.5",s:11,title:"That text was …",lr:"Any",aim:"assessment",focus:"Develop learner autonomy through self-assessment using sentence completion",time:"15 min",outline:"Learners complete sentence starters about the text (e.g. 'That text was … because …') as a self-assessment."},
+  {id:"11.6",s:11,title:"Reading ladder",lr:"Any",aim:"assessment",focus:"Promote learner autonomy through tracking reading progress on a visual ladder",time:"Ongoing",outline:"Learners visually track their progression through reading levels on a reading ladder poster or chart."},
+  {id:"11.7",s:11,title:"Learners as testers",lr:"Intermediate and above (B1+)",aim:"assessment",focus:"Promote learner-centred assessment by having learners write their own reading test",time:"45 min",outline:"Learners write comprehension questions or tasks for a text; these are exchanged and used as a peer test."},
+  {id:"11.8",s:11,title:"Product and process assessment",lr:"Any",aim:"assessment",focus:"Assess both the process of reading and the product (comprehension)",time:"30 min",outline:"In addition to checking comprehension outcomes, the teacher observes and evaluates the reading process itself."},
+  {id:"11.9",s:11,title:"One-to-one reading assessment",lr:"Any",aim:"assessment",focus:"Assess reading in a one-to-one situation for diagnostic purposes",time:"15 min per learner",outline:"The teacher sits with each learner individually and listens to them read aloud, noting difficulties and strengths."},
+  // Section 12
+  {id:"12.1",s:12,title:"Group interviews",lr:"Any (see Notes)",aim:"teacher",focus:"Understand what and how learners read through structured group interviews",time:"45 min",outline:"The teacher conducts group interviews with learners to understand their reading habits, attitudes and difficulties."},
+  {id:"12.2",s:12,title:"Action research – reading activities",lr:"Any",aim:"teacher",focus:"Research the effectiveness of reading tasks in your own classroom",time:"Ongoing",outline:"Teachers design and carry out a small-scale action research project investigating a reading activity."},
+  {id:"12.3",s:12,title:"Analyzing pre-reading tasks",lr:"Any",aim:"teacher",focus:"Analyze pre-reading tasks in published materials to evaluate their effectiveness",time:"45 min",outline:"Teachers collect and analyze a range of pre-reading tasks from coursebooks, discussing what makes them effective."},
+  {id:"12.4",s:12,title:"Materials evaluation",lr:"Any",aim:"teacher",focus:"Evaluate reading materials using a structured framework",time:"45 min",outline:"Teachers systematically evaluate a set of reading materials against criteria such as level, authenticity and task quality."},
+  {id:"12.5",s:12,title:"Peer observations",lr:"Any",aim:"teacher",focus:"Understand practice through observing a colleague teach a reading lesson",time:"60 min",outline:"Two teachers observe each other's reading lessons and give structured feedback using an observation framework."},
+  {id:"12.6",s:12,title:"Team teaching",lr:"Any",aim:"teacher",focus:"Develop understanding of reading teaching through collaborative team teaching",time:"60 min",outline:"Two teachers plan and deliver a reading lesson together, reflecting on practice jointly afterwards."},
+  {id:"12.7",s:12,title:"Reading group",lr:"Any",aim:"teacher",focus:"Develop understanding and practice through reading and discussing professional literature",time:"Ongoing",outline:"A group of teachers read articles or chapters on reading pedagogy and meet regularly to discuss and apply ideas."},
+  {id:"12.8",s:12,title:"Giving a workshop on reading",lr:"Any",aim:"teacher",focus:"Share good practice by planning and delivering a workshop on the teaching of reading",time:"60–90 min",outline:"A teacher prepares and delivers a CPD workshop for colleagues on an aspect of reading teaching."},
+];
+
+// Pre-compute levels and page for every activity
+const ACTIVITIES = ACTIVITIES_RAW.map(a => ({
+  ...a,
+  levels: levelMap(a.lr),
+  page: PAGE_MAP[a.id] || null,
+}));
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+const state = {
+  sections: new Set(),
+  levels: new Set(),    // NOW multi-select
+  aim: null,
+  search: "",
+  expanded: null,
+};
+
+// ─── FILTER ────────────────────────────────────────────────────────────────
+function getFiltered() {
+  const q = state.search.trim().toLowerCase();
+  return ACTIVITIES.filter(a => {
+    if (state.sections.size > 0 && !state.sections.has(a.s)) return false;
+    if (state.levels.size > 0 && !a.levels.some(l => state.levels.has(l))) return false;
+    if (state.aim && a.aim !== state.aim) return false;
+    if (q) {
+      const hay = (a.title + " " + a.focus + " " + a.outline).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+function render() {
+  state.search = document.getElementById("search").value;
+  const filtered = getFiltered();
+
+  // Count
+  document.getElementById("count").textContent = filtered.length;
+
+  // Desc
+  const parts = [];
+  if (state.sections.size) parts.push("Sections: " + [...state.sections].join(", "));
+  if (state.levels.size)   parts.push("Level: " + [...state.levels].join(" & "));
+  if (state.aim)           parts.push("Aim: " + AIM_GROUPS.find(a => a.id === state.aim)?.label);
+  document.getElementById("results-desc").textContent =
+    (filtered.length === 1 ? "activity found" : "activities found") +
+    (parts.length ? " — " + parts.join(" · ") : "");
+
+  // Cards
+  const container = document.getElementById("cards-container");
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty">No activities match your current filters. Try broadening your search.</div>';
+    return;
+  }
+  container.innerHTML = filtered.map(a => cardHTML(a)).join("");
+
+  // Footer
+  document.getElementById("footer").textContent =
+    ACTIVITIES.length + " activities · Teaching and Developing Reading Skills, Cambridge University Press";
+}
+
+function cardHTML(a) {
+  const col = SECTION_COLORS[a.s - 1];
+  const sec = SECTIONS.find(s => s.id === a.s);
+  const aimObj = AIM_GROUPS.find(g => g.id === a.aim);
+  const aimColor = aimObj ? aimObj.color : "#444";
+  const levelLabel = a.levels.length >= 5 ? "All levels" : a.levels.join(" · ");
+  const isOpen = state.expanded === a.id;
+
+  return `
+  <div class="card${isOpen ? " open" : ""}" onclick="toggleCard('${a.id}')">
+    <div class="card-header">
+      <div class="id-badge" style="background:${col}">${a.id}</div>
+      <div class="card-body">
+        <div class="card-title-row">
+          <span class="card-title">${a.title}</span>
+          <span class="card-section-tag" style="color:${col}">§${a.s} ${sec.short}</span>
+          ${a.page ? `<span class="card-page-tag">p. ${a.page}</span>` : ""}
+        </div>
+        <div class="card-focus">${a.focus}</div>
+        <div class="card-meta">
+          <span class="badge badge-level">${levelLabel}</span>
+          <span class="badge badge-time">⏱ ${a.time}</span>
+          <span class="badge" style="background:${aimColor}18;border-color:${aimColor}55;color:${aimColor}">${aimObj ? aimObj.label : a.aim}</span>
+        </div>
+        ${isOpen ? `
+        <div class="card-detail" style="display:block">
+          <div class="card-outline">${a.outline}</div>
+          <div class="card-level-raw"><strong>Level:</strong> ${a.lr}</div>
+        </div>` : `<div class="card-detail"></div>`}
+      </div>
+      <div class="chevron">▾</div>
+    </div>
+  </div>`;
+}
+
+function toggleCard(id) {
+  state.expanded = state.expanded === id ? null : id;
+  render();
+}
+
+// ─── PILLS ─────────────────────────────────────────────────────────────────
+function buildSectionPills() {
+  const wrap = document.getElementById("section-pills");
+  wrap.innerHTML = SECTIONS.map(s => {
+    const col = SECTION_COLORS[s.id - 1];
+    return `<button class="pill" data-sec="${s.id}" style="border-color:${col};color:${col}"
+      onclick="toggleSection(${s.id})">${s.id}. ${s.short}</button>`;
+  }).join("") +
+  `<button class="clear-btn" id="sec-clear" onclick="clearSections()">✕ Clear</button>`;
+}
+
+function buildLevelPills() {
+  const wrap = document.getElementById("level-pills");
+  wrap.innerHTML = LEVELS_DEF.map(l =>
+    `<button class="pill" data-lev="${l.id}" style="border-color:#8B6914;color:#8B6914"
+      onclick="toggleLevel('${l.id}')">${l.label}</button>`
+  ).join("") +
+  `<button class="clear-btn" id="lev-clear" onclick="clearLevels()">✕ Clear</button>`;
+}
+
+function buildAimPills() {
+  const wrap = document.getElementById("aim-pills");
+  wrap.innerHTML = AIM_GROUPS.map(ag =>
+    `<button class="pill" data-aim="${ag.id}" style="border-color:${ag.color};color:${ag.color}"
+      onclick="toggleAim('${ag.id}')">${ag.label}</button>`
+  ).join("") +
+  `<button class="clear-btn" id="aim-clear" onclick="clearAim()">✕ Clear</button>`;
+}
+
+function updatePillStyles() {
+  // Sections
+  document.querySelectorAll("[data-sec]").forEach(btn => {
+    const id = parseInt(btn.dataset.sec);
+    const col = SECTION_COLORS[id - 1];
+    if (state.sections.has(id)) {
+      btn.style.background = col; btn.style.color = "#fff"; btn.classList.add("active");
+    } else {
+      btn.style.background = "transparent"; btn.style.color = col; btn.classList.remove("active");
+    }
+  });
+  document.getElementById("sec-clear").style.display = state.sections.size ? "inline-block" : "none";
+
+  // Levels
+  document.querySelectorAll("[data-lev]").forEach(btn => {
+    const id = btn.dataset.lev;
+    if (state.levels.has(id)) {
+      btn.style.background = "#8B6914"; btn.style.color = "#fff"; btn.classList.add("active");
+    } else {
+      btn.style.background = "transparent"; btn.style.color = "#8B6914"; btn.classList.remove("active");
+    }
+  });
+  document.getElementById("lev-clear").style.display = state.levels.size ? "inline-block" : "none";
+
+  // Aims
+  document.querySelectorAll("[data-aim]").forEach(btn => {
+    const id = btn.dataset.aim;
+    const ag = AIM_GROUPS.find(a => a.id === id);
+    if (!ag) return;
+    if (state.aim === id) {
+      btn.style.background = ag.color; btn.style.color = "#fff"; btn.classList.add("active");
+    } else {
+      btn.style.background = "transparent"; btn.style.color = ag.color; btn.classList.remove("active");
+    }
+  });
+  document.getElementById("aim-clear").style.display = state.aim ? "inline-block" : "none";
+}
+
+// ─── TOGGLE HANDLERS ───────────────────────────────────────────────────────
+function toggleSection(id) {
+  if (state.sections.has(id)) state.sections.delete(id); else state.sections.add(id);
+  updatePillStyles(); render();
+}
+function clearSections() { state.sections.clear(); updatePillStyles(); render(); }
+
+function toggleLevel(id) {
+  if (state.levels.has(id)) state.levels.delete(id); else state.levels.add(id);
+  updatePillStyles(); render();
+}
+function clearLevels() { state.levels.clear(); updatePillStyles(); render(); }
+
+function toggleAim(id) {
+  state.aim = state.aim === id ? null : id;
+  updatePillStyles(); render();
+}
+function clearAim() { state.aim = null; updatePillStyles(); render(); }
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+buildSectionPills();
+buildLevelPills();
+buildAimPills();
+updatePillStyles();
+render();
+</script>
+</body>
+</html>
