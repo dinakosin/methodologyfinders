@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity Finder — Language Learning with Technology</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F0F4F8;
+    --white: #fff;
+    --ink: #1a1a2e;
+    --muted: #5a6580;
+    --border: #c8d3e0;
+    --border-light: #dde6f0;
+    --accent: #2C5282;
+    --accent-light: #EBF2FC;
+    --parchment: #e8f0f8;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Crimson Text', Georgia, serif; background: var(--bg); color: var(--ink); font-size: 16px; line-height: 1.5; }
+  a { color: inherit; text-decoration: none; }
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #F0F4F8; padding: 28px 32px 22px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,.4);
+  }
+  .header-inner { max-width: 1100px; margin: 0 auto; }
+  .header-eyebrow { font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; color: #90b4ce; margin-bottom: 5px; }
+  .header h1 { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(20px, 3.5vw, 32px); font-weight: 900; line-height: 1.15; margin-bottom: 3px; }
+  .header-sub { font-style: italic; color: #90b4ce; font-size: 15px; }
+  .main { max-width: 1100px; margin: 0 auto; padding: 26px 16px 48px; }
+  .search-wrap { margin-bottom: 20px; position: relative; }
+  .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 15px; pointer-events: none; }
+  .search-input { width: 100%; padding: 9px 14px 9px 38px; font-family: 'Crimson Text', Georgia, serif; font-size: 15.5px; border: 1.5px solid #a8bcd0; background: #fffffe; border-radius: 5px; outline: none; color: var(--ink); transition: border-color .15s; }
+  .search-input:focus { border-color: var(--accent); }
+  .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .filter-panel { background: var(--white); border: 1px solid var(--border); border-radius: 7px; padding: 14px 16px; }
+  .filter-label { font-family: 'Playfair Display', serif; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #777; margin-bottom: 10px; }
+  .pill-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { border: 1.5px solid; border-radius: 4px; padding: 4px 11px; font-size: 13px; cursor: pointer; font-family: 'Crimson Text', Georgia, serif; background: transparent; transition: background .13s, color .13s, opacity .13s; line-height: 1.4; }
+  .pill:hover { opacity: .78; }
+  .pill.active { font-weight: 600; }
+  .clear-btn { border: 1.5px solid #bbb; color: #999; border-radius: 4px; padding: 4px 10px; font-size: 12px; cursor: pointer; font-family: 'Crimson Text', Georgia, serif; background: transparent; transition: opacity .13s; display: none; }
+  .clear-btn:hover { opacity: .75; }
+  .results-bar { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .results-count { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+  .results-desc { color: var(--muted); font-size: 14.5px; }
+  #cards-container { display: grid; gap: 9px; }
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: 7px; padding: 14px 16px; cursor: pointer; transition: box-shadow .15s, transform .15s, border-color .15s; user-select: none; }
+  .card:hover { box-shadow: 0 3px 14px rgba(0,0,0,.09); transform: translateY(-1px); }
+  .card.open { border-color: var(--accent); box-shadow: 0 4px 18px rgba(44,82,130,.14); }
+  .card-header { display: flex; align-items: flex-start; gap: 12px; }
+  .id-badge { color: #fff; border-radius: 4px; padding: 3px 8px; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 11.5px; white-space: nowrap; min-width: 34px; text-align: center; margin-top: 3px; flex-shrink: 0; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+  .card-title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16.5px; line-height: 1.3; }
+  .card-chapter-tag { font-size: 12.5px; font-style: italic; }
+  .card-focus { color: #555; font-size: 14.5px; margin-top: 3px; font-style: italic; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .badge { border-radius: 3px; padding: 2px 8px; font-size: 12px; border: 1px solid; }
+  .badge-level { background: #e6f0fb; border-color: #a0bedd; color: #1e3a5f; }
+  .badge-time { background: var(--parchment); border-color: #b0c4d8; color: #4a5a70; }
+  .chevron { color: #bbb; font-size: 17px; margin-top: 3px; transition: transform .2s; flex-shrink: 0; }
+  .card.open .chevron { transform: rotate(180deg); }
+  .card-detail { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-light); }
+  .card.open .card-detail { display: block; }
+  .card-goals { font-size: 15px; line-height: 1.68; color: #333; margin-bottom: 8px; }
+  .card-level-raw { font-size: 13px; color: #888; }
+  .card-level-raw strong { color: #666; }
+  .empty { text-align: center; padding: 52px 0; color: #aaa; font-style: italic; font-size: 17px; }
+  .footer { text-align: center; color: #bbb; font-size: 13px; margin-top: 36px; font-style: italic; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--parchment); }
+  ::-webkit-scrollbar-thumb { background: #a0bedd; border-radius: 3px; }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">Cambridge Handbooks for Language Teachers</div>
+    <h1>Language Learning with Technology</h1>
+    <div class="header-sub">Activity Finder &mdash; Graham Stanley</div>
+  </div>
+</header>
+<main class="main">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" id="search" placeholder="Search by title, goals or learning focus…" oninput="render()">
+  </div>
+  <div class="filters">
+    <div class="filter-panel">
+      <div class="filter-label">Chapter</div>
+      <div class="pill-wrap" id="chapter-pills"></div>
+    </div>
+    <div class="filter-panel">
+      <div class="filter-label">Level (select multiple)</div>
+      <div class="pill-wrap" id="level-pills"></div>
+    </div>
+    <div class="filter-panel">
+      <div class="filter-label">Aim</div>
+      <div class="pill-wrap" id="aim-pills"></div>
+    </div>
+    <div class="filter-panel">
+      <div class="filter-label">Stage of lesson</div>
+      <div class="pill-wrap" id="stage-pills"></div>
+    </div>
+  </div>
+  <div class="results-bar">
+    <span class="results-count" id="count">0</span>
+    <span class="results-desc" id="results-desc">activities found</span>
+  </div>
+  <div id="cards-container"></div>
+  <div class="footer" id="footer"></div>
+</main>
+<script>
+const CHAPTERS = [
+  {id:1,title:"Integrating technology",short:"Integrating tech"},
+  {id:2,title:"Building a learning community",short:"Community"},
+  {id:3,title:"Vocabulary",short:"Vocabulary"},
+  {id:4,title:"Grammar",short:"Grammar"},
+  {id:5,title:"Listening",short:"Listening"},
+  {id:6,title:"Reading",short:"Reading"},
+  {id:7,title:"Writing",short:"Writing"},
+  {id:8,title:"Speaking",short:"Speaking"},
+  {id:9,title:"Pronunciation",short:"Pronunciation"},
+  {id:10,title:"Project work",short:"Projects"},
+  {id:11,title:"Assessment and evaluation",short:"Assessment"},
+];
+const CHAPTER_COLORS = ["#1B4F72","#2471A3","#1A7A4A","#5B2C6F","#922B21","#7D6608","#1A5276","#6E2F08","#145A32","#7E5109","#2E4057"];
+const LEVELS_DEF = [{id:"A1",label:"A1"},{id:"A2",label:"A2"},{id:"B1",label:"B1"},{id:"B1+",label:"B1+"},{id:"B2",label:"B2"},{id:"C1",label:"C1"}];
+const AIM_GROUPS = [
+  {id:"vocabulary",label:"Vocabulary",color:"#1A7A4A"},
+  {id:"grammar",label:"Grammar",color:"#5B2C6F"},
+  {id:"listening",label:"Listening",color:"#922B21"},
+  {id:"reading",label:"Reading",color:"#7D6608"},
+  {id:"writing",label:"Writing",color:"#1A5276"},
+  {id:"speaking",label:"Speaking",color:"#6E2F08"},
+  {id:"pronunciation",label:"Pronunciation",color:"#145A32"},
+  {id:"community",label:"Community & collaboration",color:"#2471A3"},
+  {id:"learner",label:"Learner training / autonomy",color:"#1B4F72"},
+  {id:"assessment",label:"Assessment",color:"#2E4057"},
+  {id:"management",label:"Classroom management",color:"#616A6B"},
+];
+const STAGE_GROUPS = [
+  {id:"warmer",label:"Warmer / Lead-in",color:"#E67E22"},
+  {id:"lead-in",label:"Pre-activity",color:"#D4AC0D"},
+  {id:"presentation",label:"Presentation",color:"#2471A3"},
+  {id:"practice",label:"Practice",color:"#1A7A4A"},
+  {id:"production",label:"Production",color:"#5B2C6F"},
+  {id:"review",label:"Review / Revision",color:"#922B21"},
+  {id:"extension",label:"Extension / Homework",color:"#7E5109"},
+  {id:"ongoing",label:"Ongoing",color:"#616A6B"},
+];
+
+function levelMap(r) {
+  r = r.toLowerCase();
+  const all = ["A1","A2","B1","B1+","B2","C1"];
+  if (r.includes("all") || r.includes("any")) return [...all];
+  const out = [];
+  if (r.includes("a1") || r.includes("beginner")) out.push("A1");
+  if (r.includes("a2") || r.includes("elementary")) { if(!out.includes("A2")) out.push("A2"); }
+  if (r.includes("pre-intermediate") || r.includes("pre intermediate")) { if(!out.includes("B1")) out.push("B1"); }
+  if (r.includes("b1+") || r.includes("b1 +")) { if(!out.includes("B1+")) out.push("B1+"); }
+  else if (r.includes("b1") && !r.includes("b1+") && !r.includes("b1 ")) { if(!out.includes("B1")) out.push("B1"); }
+  if ((r.includes("intermediate") && !r.includes("pre") && !r.includes("upper")) && !out.includes("B1+")) out.push("B1+");
+  if (r.includes("b2") || r.includes("upper-intermediate") || r.includes("upper intermediate")) { if(!out.includes("B2")) out.push("B2"); }
+  if (r.includes("c1") || r.includes("advanced")) { if(!out.includes("C1")) out.push("C1"); }
+  if ((r.includes("and above") || r.includes("+")) && out.length) {
+    const minIdx = all.indexOf(out[0]);
+    if (minIdx >= 0) return all.filter((_,i) => i >= minIdx);
+  }
+  if (r.includes(" to ") && out.length >= 2) {
+    const minI = all.indexOf(out[0]);
+    const maxI = all.indexOf(out[out.length-1]);
+    if (minI >= 0 && maxI >= 0) return all.filter((_,i) => i >= minI && i <= maxI);
+  }
+  return out.length ? out : [...all];
+}
+function inferAim(ch, goals) {
+  const g = goals.toLowerCase();
+  if (ch===3) return "vocabulary";
+  if (ch===4) return "grammar";
+  if (ch===5) return "listening";
+  if (ch===6) return "reading";
+  if (ch===7) return "writing";
+  if (ch===8) return "speaking";
+  if (ch===9) return "pronunciation";
+  if (ch===10) return "writing";
+  if (ch===11) return "assessment";
+  if (ch===2) return "community";
+  if (g.includes("classroom management")||g.includes("plan b")) return "management";
+  if (g.includes("learner train")||g.includes("autonomy")||g.includes("training")) return "learner";
+  if (g.includes("motivat")||g.includes("fun")) return "learner";
+  if (g.includes("information gather")||g.includes("needs analysis")) return "management";
+  return "community";
+}
+const ACTIVITIES_RAW = [
+{id:"1.1",ch:1,title:"Getting to know you",goals:"Ice-breaking",lr:"All",time:"10 min",focus:"Review of question forms; basic structures",stage:"warmer"},
+{id:"1.2",ch:1,title:"Technological survey",goals:"Information gathering",lr:"All",time:"10 min",focus:"Discovering experience with and attitudes to educational technology",stage:"lead-in"},
+{id:"1.3",ch:1,title:"Visual class list",goals:"Classroom management",lr:"All",time:"10 min",focus:"Getting to know each other; marking attendance with photos",stage:"ongoing"},
+{id:"1.4",ch:1,title:"Favourite websites",goals:"Needs analysis; information gathering",lr:"All",time:"10 min",focus:"Thinking about using English outside of class",stage:"lead-in"},
+{id:"1.5",ch:1,title:"Plan B",goals:"Classroom management",lr:"All",time:"Ongoing",focus:"Contingency planning when technology fails in class",stage:"ongoing"},
+{id:"1.6",ch:1,title:"Our VLE",goals:"Learner training; learner autonomy",lr:"A2+",time:"15 min",focus:"Encouraging homework and out-of-class communication",stage:"extension"},
+{id:"1.7",ch:1,title:"Dictionary race",goals:"Learner training; learner autonomy",lr:"A2+",time:"15 min",focus:"Using electronic and online dictionaries",stage:"practice"},
+{id:"1.8",ch:1,title:"Class audio recording",goals:"Giving language feedback",lr:"B1+",time:"Ongoing",focus:"Reflecting on language used; listening; pronunciation",stage:"ongoing"},
+{id:"1.9",ch:1,title:"Unlocked achievements",goals:"Motivation; fun",lr:"B1+",time:"Ongoing",focus:"Motivating learners to work harder through gamification",stage:"ongoing"},
+{id:"1.10",ch:1,title:"Flip your classroom",goals:"Learner autonomy; trying something new",lr:"B1+",time:"Ongoing",focus:"Listening; understanding grammar concepts via video at home",stage:"extension"},
+{id:"2.1",ch:2,title:"Learning together online",goals:"Building community; homework platform",lr:"All",time:"20 min",focus:"Socialising; supporting each other's learning online",stage:"extension"},
+{id:"2.2",ch:2,title:"Who are my classmates?",goals:"Building community in the classroom",lr:"B1+",time:"20 min",focus:"Reading; speaking; getting to know classmates via social networks",stage:"practice"},
+{id:"2.3",ch:2,title:"Personal learning online",goals:"Promoting autonomy; supporting learning online",lr:"B1+",time:"20 min",focus:"Socialising; building a Personal Learning Environment (PLE)",stage:"extension"},
+{id:"2.4",ch:2,title:"Class blog",goals:"Getting to know each other",lr:"B1+",time:"20 min",focus:"Responding in writing to what other learners have written",stage:"production"},
+{id:"2.5",ch:2,title:"Mystery guest",goals:"Encouraging participation",lr:"B1+",time:"Ongoing",focus:"Making predictions; responding online to a mystery blogger",stage:"extension"},
+{id:"2.6",ch:2,title:"Blog exchange",goals:"Connecting with other L2 speakers",lr:"B1+",time:"20 min",focus:"Sharing information; writing for an international audience",stage:"production"},
+{id:"2.7",ch:2,title:"Language wiki",goals:"Creating a class record of language",lr:"B1+",time:"20 min",focus:"Revision; building a shared grammar and vocabulary resource",stage:"review"},
+{id:"2.8",ch:2,title:"What we need English for",goals:"Getting to know each other",lr:"B1+",time:"15 min",focus:"Reflecting on reasons for learning English",stage:"lead-in"},
+{id:"2.9",ch:2,title:"Safety online",goals:"Raising awareness about online safety",lr:"B1+",time:"20 min",focus:"Imperatives; online safety and privacy",stage:"presentation"},
+{id:"3.1",ch:3,title:"In context",goals:"Recognising and understanding words in context",lr:"All",time:"5 min",focus:"Training learners to use context clues when they encounter new words",stage:"presentation"},
+{id:"3.2",ch:3,title:"Digital camera scavenger hunt",goals:"Identifying words; recycling vocabulary; describing location",lr:"All",time:"30 min",focus:"Classroom vocabulary; prepositions of place",stage:"practice"},
+{id:"3.3",ch:3,title:"Online word-game tournament",goals:"Using word games",lr:"All",time:"Ongoing",focus:"Increasing awareness and knowledge of vocabulary",stage:"extension"},
+{id:"3.4",ch:3,title:"Word puzzles",goals:"Encouraging vocabulary learning; fun",lr:"All",time:"20 min",focus:"Word definitions; extending knowledge of words",stage:"practice"},
+{id:"3.5",ch:3,title:"Learner-generated quizzes",goals:"Vocabulary revision",lr:"All",time:"20 min",focus:"Recycling vocabulary through peer-testing",stage:"review"},
+{id:"3.6",ch:3,title:"Memory posters",goals:"Vocabulary revision",lr:"All",time:"10 min",focus:"Recycling vocabulary topics visually with digital posters",stage:"review"},
+{id:"3.7",ch:3,title:"Alien vocabulary",goals:"Talking about unfamiliar vocabulary",lr:"All",time:"30 min",focus:"Describing unfamiliar words; circumlocution strategies",stage:"presentation"},
+{id:"3.8",ch:3,title:"Word associations",goals:"Fun with vocabulary; revision",lr:"B1",time:"30 min",focus:"Learning vocabulary form; spelling; word associations",stage:"warmer"},
+{id:"3.9",ch:3,title:"Making word games",goals:"Vocabulary fun; revision",lr:"B1",time:"30 min",focus:"Spelling; word formation; creating vocabulary games online",stage:"production"},
+{id:"3.10",ch:3,title:"Words and phrases",goals:"Introduction to a concordancer; learner autonomy",lr:"B1+",time:"15 min",focus:"Checking word frequency and collocation (EAP)",stage:"presentation"},
+{id:"3.11",ch:3,title:"Synonymswap",goals:"Expanding learners' vocabulary; using a thesaurus",lr:"B1+",time:"30 min",focus:"Synonyms; rewriting texts for variety",stage:"practice"},
+{id:"3.12",ch:3,title:"Experimenting with antonyms",goals:"Expanding learners' vocabulary; using a thesaurus",lr:"B1+",time:"30 min",focus:"Antonyms; rewriting texts",stage:"practice"},
+{id:"3.13",ch:3,title:"Slang, register and style",goals:"Focus on register and style of words",lr:"B2+",time:"30 min",focus:"Slang; informal vs formal register",stage:"presentation"},
+{id:"3.14",ch:3,title:"Multiple-meaning presentations",goals:"Learning the meaning of new words using concordancer software",lr:"B2+",time:"20 min",focus:"Understanding words with multiple meanings",stage:"practice"},
+{id:"3.15",ch:3,title:"Noticing collocations",goals:"Noticing collocations; promoting learner autonomy",lr:"B2+",time:"15 min",focus:"Vocabulary collocation; error correction (EAP)",stage:"practice"},
+{id:"4.1",ch:4,title:"Audio gap-fills",goals:"Guessing grammar from context",lr:"All",time:"20 min",focus:"Specific grammar items (e.g. verb tenses, adverbs, articles)",stage:"practice"},
+{id:"4.2",ch:4,title:"Grammar check",goals:"Noticing and correcting grammar; raising awareness of tools",lr:"All",time:"20 min",focus:"Grammar and spelling correction using online tools",stage:"review"},
+{id:"4.3",ch:4,title:"Automatic cloze tests",goals:"Raising awareness of grammar; revision of tenses",lr:"All",time:"10 min",focus:"General grammar; encouraging learners to correct writing",stage:"review"},
+{id:"4.4",ch:4,title:"Questioning infographics",goals:"Opportunities for grammar practice",lr:"All",time:"25 min",focus:"Wh- and yes/no question formation; language of comparisons",stage:"practice"},
+{id:"4.5",ch:4,title:"Grammar fight",goals:"Using the Web to check grammar usage",lr:"All",time:"20 min",focus:"Specific grammar structures tested with real-world web searches",stage:"practice"},
+{id:"4.6",ch:4,title:"Grammar-reference sites",goals:"Introducing grammar-reference websites; learner autonomy",lr:"B1+",time:"20 min",focus:"Examining grammar explanations on different websites",stage:"presentation"},
+{id:"4.7",ch:4,title:"Common grammatical errors",goals:"Checking for mistakes",lr:"B1+",time:"15 min",focus:"Common grammatical errors; non-standard grammar",stage:"review"},
+{id:"4.8",ch:4,title:"Real-world grammar",goals:"Looking at real-world examples of grammar",lr:"B1+",time:"20 min",focus:"Revision of grammar using authentic materials",stage:"presentation"},
+{id:"4.9",ch:4,title:"Grammar safari",goals:"Noticing usage of grammar; using browser search tools",lr:"B1+",time:"15 min",focus:"Grammar usage in context (e.g. present perfect)",stage:"practice"},
+{id:"4.10",ch:4,title:"Authentic word clouds",goals:"Increasing learner awareness of authentic written communication",lr:"B1+-C1",time:"40 min",focus:"Authentic written communication; complex sentence structures",stage:"presentation"},
+{id:"4.11",ch:4,title:"If only\u2026",goals:"Practising contrary-to-fact conditionals",lr:"B1+-C1",time:"10 min",focus:"Hypothetical and contrary-to-fact conditionals",stage:"practice"},
+{id:"4.12",ch:4,title:"Grammar in context",goals:"Raising awareness of grammar in real communicative context",lr:"B1+-C1",time:"15\u201320 min",focus:"Revision of grammar in context (e.g. phrasal verbs, past perfect)",stage:"practice"},
+{id:"5.1",ch:5,title:"Guess what I'm talking about",goals:"Listening for gist and inference",lr:"All",time:"15 min",focus:"Listening for information not directly stated; inference",stage:"warmer"},
+{id:"5.2",ch:5,title:"Other people's interests",goals:"Authentic listening; understanding speakers from different countries",lr:"All",time:"20 min",focus:"Expressing likes; vocabulary related to hobbies and free time",stage:"practice"},
+{id:"5.3",ch:5,title:"Search the tube",goals:"Awareness of how videos can be used for language learning",lr:"All",time:"20 min",focus:"Exploring video platforms; vocabulary and comprehension",stage:"lead-in"},
+{id:"5.4",ch:5,title:"Reordered video story",goals:"Listening for gist and for detail",lr:"All",time:"20 min",focus:"Re-creating a story from screenshots; narrative structure",stage:"practice"},
+{id:"5.5",ch:5,title:"Talk-radio listening",goals:"Listening to peers",lr:"All",time:"10 min",focus:"Listening for information; listening for fun",stage:"practice"},
+{id:"5.6",ch:5,title:"Guided tours",goals:"Asking learners to listen critically; describing places",lr:"All",time:"20 min",focus:"Listening for information and detail",stage:"practice"},
+{id:"5.7",ch:5,title:"Recorded poetry",goals:"Listening and identifying vowel sounds and rhymes",lr:"All",time:"20 min",focus:"Vowel sounds; rhyming words (especially young learners)",stage:"practice"},
+{id:"5.8",ch:5,title:"Online classroom guest",goals:"Motivating learners to listen",lr:"All",time:"20 min",focus:"Listening for information via Skype guest speaker",stage:"practice"},
+{id:"5.9",ch:5,title:"Recorded stories",goals:"Practise speaking with narrative tenses; self-correction",lr:"All",time:"10 min",focus:"Narrative tenses; listening back to own recordings",stage:"production"},
+{id:"5.10",ch:5,title:"Voice-recorder dictation",goals:"Encourage learners to listen to themselves; reflect on their English",lr:"A2-B1+",time:"20 min",focus:"Improving listening, speaking and writing through self-recording",stage:"review"},
+{id:"5.11",ch:5,title:"Interview bingo",goals:"Predicting before listening",lr:"B1+",time:"15 min",focus:"Listening for information; natural connected speech",stage:"warmer"},
+{id:"5.12",ch:5,title:"Someone I know",goals:"Listening practice; providing role models for learners",lr:"B1+",time:"20 min",focus:"Listening for detail; language learning stories",stage:"practice"},
+{id:"5.13",ch:5,title:"Altered interviews",goals:"Listening for fun",lr:"B1+",time:"50 min",focus:"Listening for detail; creative audio editing",stage:"production"},
+{id:"6.1",ch:6,title:"Word-cloud warmer",goals:"Pre-reading activity",lr:"All",time:"10 min",focus:"Vocabulary activation; predicting text content from word clouds",stage:"warmer"},
+{id:"6.2",ch:6,title:"Video pre-reading warmer",goals:"Pre-reading activity",lr:"All",time:"10 min",focus:"Predicting text content using a related video",stage:"warmer"},
+{id:"6.3",ch:6,title:"Quick-response reading race",goals:"Reading for speed",lr:"All",time:"20 min",focus:"Reading for gist; skimming quickly",stage:"practice"},
+{id:"6.4",ch:6,title:"IWB skimming and scanning",goals:"Practising reading subskills",lr:"All",time:"20 min",focus:"Skimming and scanning using IWB tools",stage:"practice"},
+{id:"6.5",ch:6,title:"Pre-reading presentation",goals:"Pre-reading activity",lr:"All",time:"20 min",focus:"Vocabulary activation; predicting content before reading",stage:"lead-in"},
+{id:"6.6",ch:6,title:"Readathon",goals:"Extensive reading; reading for pleasure",lr:"All",time:"Ongoing",focus:"Reading for pleasure; building reading habits",stage:"extension"},
+{id:"6.7",ch:6,title:"Comparative texts",goals:"Analysing texts comparatively",lr:"B1+",time:"30 min",focus:"Reading for detail; comparing texts on the same topic",stage:"practice"},
+{id:"6.8",ch:6,title:"Reviewer role play",goals:"Reading and responding critically",lr:"B1+",time:"30 min",focus:"Reading; writing a review",stage:"production"},
+{id:"6.9",ch:6,title:"Coded message trail",goals:"Reading for fun",lr:"B1+",time:"30 min",focus:"Reading for gist and detail; decoding messages",stage:"practice"},
+{id:"6.10",ch:6,title:"Ask the Internet",goals:"Generating questions before and during reading",lr:"B1+",time:"20 min",focus:"Reading; question formation; using search engines",stage:"practice"},
+{id:"6.11",ch:6,title:"Identifying text-types",goals:"Analysing text genres",lr:"B1+",time:"30 min",focus:"Text types; register and style",stage:"presentation"},
+{id:"6.12",ch:6,title:"Big events",goals:"Reading about current events",lr:"B1+",time:"30 min",focus:"Reading for detail; current affairs",stage:"practice"},
+{id:"6.13",ch:6,title:"Kids' storytelling",goals:"Reading and responding creatively",lr:"All",time:"30 min",focus:"Reading aloud; narration; listening (especially young learners)",stage:"practice"},
+{id:"6.14",ch:6,title:"Interactive fiction",goals:"Reading for fun; making text choices",lr:"B1+",time:"40 min",focus:"Reading for detail; decision making; narrative",stage:"practice"},
+{id:"6.15",ch:6,title:"Fanfiction",goals:"Creative reading and writing",lr:"B1+",time:"Ongoing",focus:"Reading; creative writing; sharing with an audience",stage:"extension"},
+{id:"7.1",ch:7,title:"Social-networking writing group",goals:"Writing for a real audience",lr:"B1+",time:"Ongoing",focus:"Writing; sharing; peer feedback via social network",stage:"production"},
+{id:"7.2",ch:7,title:"Writing on a class wiki",goals:"Collaborative writing",lr:"B1+",time:"30 min",focus:"Writing; collaboration; editing wiki pages",stage:"production"},
+{id:"7.3",ch:7,title:"Using learner blogs",goals:"Writing regularly for an audience",lr:"B1+",time:"Ongoing",focus:"Writing; self-expression; reflective blogging",stage:"production"},
+{id:"7.4",ch:7,title:"Blogging summary",goals:"Summarising other writers",lr:"B1+",time:"30 min",focus:"Summarising; academic writing skills",stage:"practice"},
+{id:"7.5",ch:7,title:"Myths and legends",goals:"Creative writing",lr:"All",time:"30 min",focus:"Narrative writing; past tenses",stage:"production"},
+{id:"7.6",ch:7,title:"Five-sentence photo story",goals:"Describing images; creative writing",lr:"All",time:"20 min",focus:"Descriptive writing; storytelling from images",stage:"production"},
+{id:"7.7",ch:7,title:"Speed writing",goals:"Developing writing fluency",lr:"B1+",time:"15 min",focus:"Writing fluency; overcoming writer's block",stage:"practice"},
+{id:"7.8",ch:7,title:"Interactive story",goals:"Collaborative story writing",lr:"B1+",time:"40 min",focus:"Narrative writing; collaboration; online story tools",stage:"production"},
+{id:"7.9",ch:7,title:"Developing a story",goals:"Story development through technology",lr:"B1+",time:"40 min",focus:"Narrative writing; story structure and development",stage:"production"},
+{id:"7.10",ch:7,title:"Crazy stories or poems",goals:"Creative writing; fun",lr:"All",time:"30 min",focus:"Creative writing; grammar practice through play",stage:"production"},
+{id:"7.11",ch:7,title:"Art stories",goals:"Creative writing inspired by art",lr:"B1+",time:"30 min",focus:"Descriptive writing; art appreciation",stage:"production"},
+{id:"7.12",ch:7,title:"Do you dream?",goals:"Descriptive writing",lr:"B1+",time:"30 min",focus:"Descriptive writing; narrative tenses",stage:"production"},
+{id:"7.13",ch:7,title:"Message from the past",goals:"Writing for a specific audience",lr:"B1+",time:"30 min",focus:"Descriptive and narrative writing; time expressions",stage:"production"},
+{id:"7.14",ch:7,title:"Report writing",goals:"Practising academic and formal writing",lr:"B1+",time:"40 min",focus:"Report writing; formal language",stage:"practice"},
+{id:"7.15",ch:7,title:"Sensationalist reporting",goals:"Media writing; understanding style differences",lr:"B1+",time:"40 min",focus:"Newspaper-style writing; register",stage:"production"},
+{id:"7.16",ch:7,title:"Biographies",goals:"Writing biographies",lr:"B1+",time:"40 min",focus:"Biography writing; past tenses; timelines",stage:"production"},
+{id:"7.17",ch:7,title:"Translate to SMS",goals:"Understanding informal register",lr:"B1+",time:"20 min",focus:"Informal register; SMS language; abbreviations",stage:"practice"},
+{id:"7.18",ch:7,title:"Pros and cons",goals:"Argumentative writing",lr:"B1+",time:"30 min",focus:"Discursive writing; expressing opinions",stage:"practice"},
+{id:"7.19",ch:7,title:"Social network CVs",goals:"Writing CVs; professional writing",lr:"B2+",time:"40 min",focus:"Formal writing; CVs; professional language",stage:"production"},
+{id:"7.20",ch:7,title:"Academic writing",goals:"Academic writing skills",lr:"B2+",time:"Ongoing",focus:"Academic writing; referencing; formal style (EAP)",stage:"practice"},
+{id:"8.1",ch:8,title:"Spoken journals",goals:"Reflective speaking; recording progress",lr:"B1+",time:"Ongoing",focus:"Speaking; reflection; narrative tenses",stage:"production"},
+{id:"8.2",ch:8,title:"Speaking pictures",goals:"Describing and speaking",lr:"All",time:"20 min",focus:"Describing images; speaking fluently",stage:"practice"},
+{id:"8.3",ch:8,title:"Reading aloud",goals:"Developing pronunciation and fluency through reading",lr:"All",time:"20 min",focus:"Reading aloud; pronunciation; pacing",stage:"practice"},
+{id:"8.4",ch:8,title:"Unscripted and scripted dialogues",goals:"Dialogue practice",lr:"All",time:"30 min",focus:"Conversational language; fluency; scripted vs spontaneous speech",stage:"practice"},
+{id:"8.5",ch:8,title:"Mobile circle game",goals:"Speaking for fun",lr:"All",time:"20 min",focus:"Speaking; vocabulary activation; recording on mobiles",stage:"warmer"},
+{id:"8.6",ch:8,title:"Guided tour",goals:"Describing places; extended speaking",lr:"B1+",time:"40 min",focus:"Speaking; description; presenting to an audience",stage:"production"},
+{id:"8.7",ch:8,title:"Virtual-world tourists",goals:"Speaking; describing places in virtual environments",lr:"B1+",time:"40 min",focus:"Speaking; describing places; virtual worlds",stage:"production"},
+{id:"8.8",ch:8,title:"Talk-radio speaking",goals:"Speaking for a real audience",lr:"B1+",time:"40 min",focus:"Spoken fluency; scripted and unscripted speaking for radio",stage:"production"},
+{id:"8.9",ch:8,title:"Current affairs",goals:"Discussing current events",lr:"B1+",time:"30 min",focus:"Discussing; expressing opinions; current affairs vocabulary",stage:"practice"},
+{id:"8.10",ch:8,title:"Train or coach?",goals:"Decision making; language of comparison",lr:"B1+",time:"30 min",focus:"Language of comparison; decision making; transport vocabulary",stage:"practice"},
+{id:"8.11",ch:8,title:"Discussions of interest",goals:"Promoting spoken fluency",lr:"B1+",time:"40 min",focus:"Spoken fluency; extended discussions",stage:"production"},
+{id:"8.12",ch:8,title:"Animated film",goals:"Creating and narrating animated films",lr:"B1+",time:"40 min",focus:"Spoken narration; creative production",stage:"production"},
+{id:"8.13",ch:8,title:"World issues",goals:"Discussing complex world issues",lr:"B2+",time:"40 min",focus:"Speaking; discussing complex issues; argumentation",stage:"production"},
+{id:"9.1",ch:9,title:"Class-vocabulary audio notebook",goals:"Recording and practising pronunciation",lr:"All",time:"Ongoing",focus:"Pronunciation; vocabulary; self-recording",stage:"ongoing"},
+{id:"9.2",ch:9,title:"Phonemic dialogues",goals:"Pronunciation practice through dialogues",lr:"B1+",time:"30 min",focus:"Phonemic symbols; pronunciation in context",stage:"practice"},
+{id:"9.3",ch:9,title:"Howdjasayit?",goals:"Noticing connected speech",lr:"B1+",time:"20 min",focus:"Connected speech; elision and assimilation",stage:"presentation"},
+{id:"9.4",ch:9,title:"Schwa what?",goals:"Understanding the schwa sound",lr:"B1+",time:"20 min",focus:"The schwa sound; unstressed vowels",stage:"presentation"},
+{id:"9.5",ch:9,title:"Phonetic games",goals:"Phonetics practice through games",lr:"All",time:"30 min",focus:"Phonetic symbols; sound-spelling relationships",stage:"practice"},
+{id:"9.6",ch:9,title:"Minimal-pair poems",goals:"Distinguishing minimal pairs",lr:"All",time:"20 min",focus:"Minimal pairs; vowel sounds in rhyming poems",stage:"practice"},
+{id:"9.7",ch:9,title:"Newsreader",goals:"Pronunciation modelling and practice",lr:"B1+",time:"30 min",focus:"Pronunciation; intonation; stress in news delivery",stage:"practice"},
+{id:"9.8",ch:9,title:"Tongue twisters",goals:"Pronunciation; fun",lr:"All",time:"15 min",focus:"Consonant sounds; articulatory fluency",stage:"warmer"},
+{id:"9.9",ch:9,title:"Voice recognition",goals:"Self-monitoring pronunciation clarity",lr:"B1+",time:"20 min",focus:"Pronunciation; clarity; using voice recognition software",stage:"practice"},
+{id:"9.10",ch:9,title:"Smartphone app",goals:"Independent pronunciation practice outside class",lr:"All",time:"Ongoing",focus:"Pronunciation; self-directed learning with apps",stage:"extension"},
+{id:"9.11",ch:9,title:"What's the intonation?",goals:"Noticing intonation patterns",lr:"B1+",time:"20 min",focus:"Intonation patterns; rising and falling tones",stage:"presentation"},
+{id:"9.12",ch:9,title:"Different accents",goals:"Listening to and analysing English accents",lr:"B1+",time:"30 min",focus:"Listening; English accents; cultural awareness",stage:"practice"},
+{id:"9.13",ch:9,title:"Guess the language",goals:"Phonological awareness",lr:"All",time:"15 min",focus:"Phonological awareness; identifying language sounds",stage:"warmer"},
+{id:"9.14",ch:9,title:"Re-recording speeches and scenes",goals:"Pronunciation and performance",lr:"B1+",time:"40 min",focus:"Pronunciation; intonation; dramatic reading and recording",stage:"production"},
+{id:"10.1",ch:10,title:"Our e-book",goals:"Creating a collaborative digital publication",lr:"All",time:"Ongoing",focus:"Writing; collaboration; digital publishing",stage:"production"},
+{id:"10.2",ch:10,title:"Class magazine",goals:"Creating a class magazine",lr:"B1+",time:"Ongoing",focus:"Writing; reading; editing; design",stage:"production"},
+{id:"10.3",ch:10,title:"Culture capsule",goals:"Cultural exploration and sharing",lr:"B1+",time:"Ongoing",focus:"Reading; writing; cultural knowledge",stage:"production"},
+{id:"10.4",ch:10,title:"Class weekly learning podcast",goals:"Creating podcasts",lr:"B1+",time:"Ongoing",focus:"Speaking; listening; podcast production",stage:"production"},
+{id:"10.5",ch:10,title:"TV magazine programme",goals:"Creating video content",lr:"B1+",time:"Ongoing",focus:"Speaking; writing; video production",stage:"production"},
+{id:"10.6",ch:10,title:"Short film",goals:"Filmmaking project",lr:"B1+",time:"Ongoing",focus:"Speaking; creative writing; film production",stage:"production"},
+{id:"10.7",ch:10,title:"Film festival",goals:"Watching and critically reviewing films",lr:"B1+",time:"Ongoing",focus:"Speaking; critical thinking; writing reviews",stage:"production"},
+{id:"10.8",ch:10,title:"Our cookbook",goals:"Creating a class cookbook",lr:"All",time:"Ongoing",focus:"Writing; vocabulary; cultural exchange",stage:"production"},
+{id:"10.9",ch:10,title:"Make your own webquest",goals:"Creating learning tasks for peers",lr:"B1+",time:"Ongoing",focus:"Writing; research skills; task design",stage:"production"},
+{id:"10.10",ch:10,title:"IWB island",goals:"Creating interactive IWB learning materials",lr:"All",time:"Ongoing",focus:"All skills; creative collaboration; IWB tools",stage:"production"},
+{id:"11.1",ch:11,title:"E-portfolio archive and showcase",goals:"Portfolio-based assessment",lr:"All",time:"Ongoing",focus:"Self-assessment; reflection; showcasing learner work",stage:"ongoing"},
+{id:"11.2",ch:11,title:"Awarding badges",goals:"Digital badges for achievement",lr:"All",time:"Ongoing",focus:"Motivation; recognising learning milestones",stage:"ongoing"},
+{id:"11.3",ch:11,title:"Comparing placement tests",goals:"Raising test awareness",lr:"B1+",time:"30 min",focus:"Test-taking strategies; comparing placement tests",stage:"presentation"},
+{id:"11.4",ch:11,title:"Testing you",goals:"Peer testing",lr:"All",time:"20 min",focus:"Review of language; peer assessment",stage:"review"},
+{id:"11.5",ch:11,title:"Testing me",goals:"Self-testing",lr:"All",time:"Ongoing",focus:"Self-assessment; reviewing language learned",stage:"ongoing"},
+{id:"11.6",ch:11,title:"Screen-capture video feedback",goals:"Technology-based teacher feedback",lr:"All",time:"Ongoing",focus:"Feedback; reflection; improving written work",stage:"ongoing"},
+{id:"11.7",ch:11,title:"Self-assessing presentations",goals:"Self-assessment of spoken presentations",lr:"B1+",time:"30 min",focus:"Reflection; presentation skills; self-evaluation criteria",stage:"review"},
+{id:"11.8",ch:11,title:"Evaluating classroom activities",goals:"Evaluating learning activities",lr:"All",time:"Ongoing",focus:"Reflection; evaluating activities from learner perspective",stage:"ongoing"},
+{id:"11.9",ch:11,title:"Levelling up",goals:"Gamified progress tracking",lr:"B1+",time:"Ongoing",focus:"Motivation; self-assessment; gamification of progress",stage:"ongoing"},
+];
+const ACTIVITIES = ACTIVITIES_RAW.map(a => ({...a, levels: levelMap(a.lr), aim: inferAim(a.ch, a.goals)}));
+const state = {chapters:new Set(), levels:new Set(), aim:null, stage:null, search:"", expanded:null};
+
+function getFiltered() {
+  const q = state.search.trim().toLowerCase();
+  return ACTIVITIES.filter(a => {
+    if (state.chapters.size > 0 && !state.chapters.has(a.ch)) return false;
+    if (state.levels.size > 0 && !a.levels.some(l => state.levels.has(l))) return false;
+    if (state.aim && a.aim !== state.aim) return false;
+    if (state.stage && a.stage !== state.stage) return false;
+    if (q) { const hay = (a.title+" "+a.goals+" "+a.focus+" "+a.lr).toLowerCase(); if (!hay.includes(q)) return false; }
+    return true;
+  });
+}
+
+function render() {
+  state.search = document.getElementById("search").value;
+  const filtered = getFiltered();
+  document.getElementById("count").textContent = filtered.length;
+  const parts = [];
+  if (state.chapters.size) parts.push("Ch: "+[...state.chapters].join(", "));
+  if (state.levels.size)   parts.push("Level: "+[...state.levels].join(" & "));
+  if (state.aim)           parts.push("Aim: "+AIM_GROUPS.find(a=>a.id===state.aim)?.label);
+  if (state.stage)         parts.push("Stage: "+STAGE_GROUPS.find(s=>s.id===state.stage)?.label);
+  document.getElementById("results-desc").textContent =
+    (filtered.length===1?"activity found":"activities found")+(parts.length?" \u2014 "+parts.join(" \u00b7 "):"");
+  const container = document.getElementById("cards-container");
+  if (filtered.length===0) { container.innerHTML='<div class="empty">No activities match your filters. Try broadening your search.</div>'; return; }
+  container.innerHTML = filtered.map(a=>cardHTML(a)).join("");
+  document.getElementById("footer").textContent =
+    ACTIVITIES.length+" activities \u00b7 Language Learning with Technology, Cambridge University Press \u00b7 Graham Stanley";
+}
+
+function cardHTML(a) {
+  const col = CHAPTER_COLORS[a.ch-1];
+  const chap = CHAPTERS.find(c=>c.id===a.ch);
+  const aimObj = AIM_GROUPS.find(g=>g.id===a.aim);
+  const stageObj = STAGE_GROUPS.find(s=>s.id===a.stage);
+  const aimColor = aimObj?aimObj.color:"#444";
+  const stageColor = stageObj?stageObj.color:"#666";
+  const levelLabel = a.levels.length>=6?"All levels":a.levels.join(" \u00b7 ");
+  const isOpen = state.expanded===a.id;
+  return `<div class="card${isOpen?" open":""}" onclick="toggleCard('${a.id}')">
+    <div class="card-header">
+      <div class="id-badge" style="background:${col}">${a.id}</div>
+      <div class="card-body">
+        <div class="card-title-row">
+          <span class="card-title">${a.title}</span>
+          <span class="card-chapter-tag" style="color:${col}">Ch.${a.ch} ${chap.short}</span>
+        </div>
+        <div class="card-focus">${a.focus}</div>
+        <div class="card-meta">
+          <span class="badge badge-level">${levelLabel}</span>
+          <span class="badge badge-time">\u23f1 ${a.time}</span>
+          <span class="badge" style="background:${aimColor}18;border-color:${aimColor}55;color:${aimColor}">${aimObj?aimObj.label:a.aim}</span>
+          <span class="badge" style="background:${stageColor}14;border-color:${stageColor}44;color:${stageColor}">${stageObj?stageObj.label:a.stage}</span>
+        </div>
+        ${isOpen?`<div class="card-detail" style="display:block">
+          <div class="card-goals"><strong>Main goals:</strong> ${a.goals}</div>
+          <div class="card-level-raw"><strong>Level:</strong> ${a.lr}</div>
+        </div>`:`<div class="card-detail"></div>`}
+      </div>
+      <div class="chevron">\u25be</div>
+    </div>
+  </div>`;
+}
+
+function toggleCard(id) { state.expanded = state.expanded===id?null:id; render(); }
+
+function buildChapterPills() {
+  document.getElementById("chapter-pills").innerHTML =
+    CHAPTERS.map(c=>{const col=CHAPTER_COLORS[c.id-1];
+      return `<button class="pill" data-ch="${c.id}" style="border-color:${col};color:${col}" onclick="toggleChapter(${c.id})">${c.id}. ${c.short}</button>`;
+    }).join("")+`<button class="clear-btn" id="ch-clear" onclick="clearChapters()">\u2715 Clear</button>`;
+}
+function buildLevelPills() {
+  document.getElementById("level-pills").innerHTML =
+    LEVELS_DEF.map(l=>`<button class="pill" data-lev="${l.id}" style="border-color:#2C5282;color:#2C5282" onclick="toggleLevel('${l.id}')">${l.label}</button>`).join("")+
+    `<button class="clear-btn" id="lev-clear" onclick="clearLevels()">\u2715 Clear</button>`;
+}
+function buildAimPills() {
+  document.getElementById("aim-pills").innerHTML =
+    AIM_GROUPS.map(ag=>`<button class="pill" data-aim="${ag.id}" style="border-color:${ag.color};color:${ag.color}" onclick="toggleAim('${ag.id}')">${ag.label}</button>`).join("")+
+    `<button class="clear-btn" id="aim-clear" onclick="clearAim()">\u2715 Clear</button>`;
+}
+function buildStagePills() {
+  document.getElementById("stage-pills").innerHTML =
+    STAGE_GROUPS.map(sg=>`<button class="pill" data-stage="${sg.id}" style="border-color:${sg.color};color:${sg.color}" onclick="toggleStage('${sg.id}')">${sg.label}</button>`).join("")+
+    `<button class="clear-btn" id="stage-clear" onclick="clearStage()">\u2715 Clear</button>`;
+}
+
+function updatePillStyles() {
+  document.querySelectorAll("[data-ch]").forEach(btn=>{
+    const id=parseInt(btn.dataset.ch); const col=CHAPTER_COLORS[id-1];
+    if(state.chapters.has(id)){btn.style.background=col;btn.style.color="#fff";btn.classList.add("active");}
+    else{btn.style.background="transparent";btn.style.color=col;btn.classList.remove("active");}
+  });
+  document.getElementById("ch-clear").style.display=state.chapters.size?"inline-block":"none";
+
+  document.querySelectorAll("[data-lev]").forEach(btn=>{
+    const id=btn.dataset.lev;
+    if(state.levels.has(id)){btn.style.background="#2C5282";btn.style.color="#fff";btn.classList.add("active");}
+    else{btn.style.background="transparent";btn.style.color="#2C5282";btn.classList.remove("active");}
+  });
+  document.getElementById("lev-clear").style.display=state.levels.size?"inline-block":"none";
+
+  document.querySelectorAll("[data-aim]").forEach(btn=>{
+    const id=btn.dataset.aim; const ag=AIM_GROUPS.find(a=>a.id===id); if(!ag) return;
+    if(state.aim===id){btn.style.background=ag.color;btn.style.color="#fff";btn.classList.add("active");}
+    else{btn.style.background="transparent";btn.style.color=ag.color;btn.classList.remove("active");}
+  });
+  document.getElementById("aim-clear").style.display=state.aim?"inline-block":"none";
+
+  document.querySelectorAll("[data-stage]").forEach(btn=>{
+    const id=btn.dataset.stage; const sg=STAGE_GROUPS.find(s=>s.id===id); if(!sg) return;
+    if(state.stage===id){btn.style.background=sg.color;btn.style.color="#fff";btn.classList.add("active");}
+    else{btn.style.background="transparent";btn.style.color=sg.color;btn.classList.remove("active");}
+  });
+  document.getElementById("stage-clear").style.display=state.stage?"inline-block":"none";
+}
+
+function toggleChapter(id){if(state.chapters.has(id))state.chapters.delete(id);else state.chapters.add(id);updatePillStyles();render();}
+function clearChapters(){state.chapters.clear();updatePillStyles();render();}
+function toggleLevel(id){if(state.levels.has(id))state.levels.delete(id);else state.levels.add(id);updatePillStyles();render();}
+function clearLevels(){state.levels.clear();updatePillStyles();render();}
+function toggleAim(id){state.aim=state.aim===id?null:id;updatePillStyles();render();}
+function clearAim(){state.aim=null;updatePillStyles();render();}
+function toggleStage(id){state.stage=state.stage===id?null:id;updatePillStyles();render();}
+function clearStage(){state.stage=null;updatePillStyles();render();}
+
+buildChapterPills();buildLevelPills();buildAimPills();buildStagePills();updatePillStyles();render();
+</script>
+</body>
+</html>
