@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Learning with Technology — Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F0F4F8;
+    --white: #fff;
+    --ink: #1a1a2e;
+    --muted: #5a6580;
+    --border: #c8d3e0;
+    --border-light: #dde6f0;
+    --accent: #2C5282;
+    --accent-light: #EBF2FC;
+    --parchment: #e8f0f8;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Crimson Text', Georgia, serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #F0F4F8;
+    padding: 36px 32px 30px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.4);
+  }
+  .header-inner { max-width: 900px; margin: 0 auto; }
+  .header-eyebrow {
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #90b4ce;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(24px, 4vw, 42px);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+  .header-sub {
+    font-style: italic;
+    color: #90b4ce;
+    font-size: 16px;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 16px 64px;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* ── INTRO ── */
+  .intro {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .intro-label {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 3px 10px;
+    margin-bottom: 14px;
+  }
+  .intro h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 3.5vw, 34px);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+  .intro p {
+    color: var(--muted);
+    font-size: 17px;
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: #aab;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 22px;
+  }
+
+  /* ── MODULE CARD ── */
+  .module-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    overflow: hidden;
+    transition: box-shadow .18s, transform .18s, border-color .18s;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+  }
+  .module-card:hover {
+    box-shadow: 0 6px 28px rgba(44,82,130,.15);
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+  .module-card:hover .card-arrow { color: var(--accent); transform: translateX(4px); }
+
+  .card-stripe {
+    height: 5px;
+    width: 100%;
+  }
+
+  .card-content {
+    padding: 24px 26px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-eyebrow {
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 2.5vw, 22px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+
+  .card-author {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 14.5px;
+    margin-bottom: 16px;
+  }
+
+  .card-desc {
+    color: #4a5568;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+
+  .card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 20px;
+  }
+  .stat-badge {
+    border-radius: 3px;
+    padding: 3px 9px;
+    font-size: 12px;
+    border: 1px solid;
+    font-family: 'Crimson Text', serif;
+  }
+
+  .card-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  .cta-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+  }
+
+  .card-arrow {
+    font-size: 20px;
+    color: #bbb;
+    transition: color .18s, transform .18s;
+    line-height: 1;
+  }
+
+  /* ── BOTTOM NOTE ── */
+  .bottom-note {
+    text-align: center;
+    margin-top: 52px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border-light);
+  }
+  .bottom-note p {
+    color: #aab;
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.8;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    color: #bbb;
+    font-size: 13px;
+    padding: 18px 16px 24px;
+    font-style: italic;
+    border-top: 1px solid var(--border-light);
+    background: var(--white);
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--parchment); }
+  ::-webkit-scrollbar-thumb { background: #a0bedd; border-radius: 3px; }
+
+  @media (max-width: 520px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .header { padding: 26px 18px 22px; }
+    .main { padding: 32px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-eyebrow">Cambridge Handbooks for Language Teachers</div>
+    <h1>Language Learning with Technology</h1>
+    <div class="header-sub">Interactive Activity Finders &mdash; Graham Stanley</div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- INTRO -->
+  <div class="intro">
+    <div class="intro-label">Platform Index</div>
+    <h2>Choose your Activity Finder</h2>
+    <p>
+      Explore curated classroom activities from two Cambridge handbooks.
+      Filter by chapter, level, aim and stage of lesson to find the perfect activity for your class.
+    </p>
+  </div>
+
+  <!-- DIVIDER -->
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Available modules</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-grid">
+
+    <!-- Card 1: Language Learning with Technology -->
+    <a href="llt_activity_finder.html" class="module-card">
+      <div class="card-stripe" style="background: linear-gradient(90deg, #1a1a2e, #0f3460);"></div>
+      <div class="card-content">
+        <div class="card-eyebrow" style="color: #2C5282;">Activity Finder · Book 1</div>
+        <div class="card-title">Language Learning<br>with Technology</div>
+        <div class="card-author">Graham Stanley</div>
+        <div class="card-desc">
+          Discover activities integrating digital tools across all four skills — vocabulary, grammar,
+          speaking, writing, listening, reading, pronunciation, projects and assessment.
+        </div>
+        <div class="card-stats">
+          <span class="stat-badge" style="background:#e6f0fb;border-color:#a0bedd;color:#1e3a5f;">115 activities</span>
+          <span class="stat-badge" style="background:#e8f0f8;border-color:#b0c4d8;color:#4a5a70;">11 chapters</span>
+          <span class="stat-badge" style="background:#eef6ee;border-color:#9ecb9e;color:#1a5c1a;">A1 → C1</span>
+          <span class="stat-badge" style="background:#fdf3e7;border-color:#e0c080;color:#7a5500;">Digital tools</span>
+        </div>
+        <div class="card-cta">
+          <span class="cta-text" style="color:#1a1a2e;">Open Activity Finder</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- Card 2: Placeholder for second book -->
+    <a href="book2_activity_finder.html" class="module-card">
+      <div class="card-stripe" style="background: linear-gradient(90deg, #1A5276, #1A7A4A);"></div>
+      <div class="card-content">
+        <div class="card-eyebrow" style="color: #1A7A4A;">Activity Finder · Book 2</div>
+        <div class="card-title">Teaching Online:<br>Tools and Techniques</div>
+        <div class="card-author">Nicky Hockly &amp; Gavin Dudeney</div>
+        <div class="card-desc">
+          Activities and techniques for teaching in virtual and blended learning environments —
+          from synchronous online lessons to asynchronous collaborative tasks.
+        </div>
+        <div class="card-stats">
+          <span class="stat-badge" style="background:#e6f5ec;border-color:#8ecfaa;color:#1A5C1A;">Online teaching</span>
+          <span class="stat-badge" style="background:#e8f0f8;border-color:#b0c4d8;color:#4a5a70;">10 chapters</span>
+          <span class="stat-badge" style="background:#eef6ee;border-color:#9ecb9e;color:#1a5c1a;">A2 → C1</span>
+          <span class="stat-badge" style="background:#f0eaf8;border-color:#c0a0d8;color:#4a1a7a;">Blended learning</span>
+        </div>
+        <div class="card-cta">
+          <span class="cta-text" style="color:#1a1a2e;">Open Activity Finder</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- BOTTOM NOTE -->
+  <div class="bottom-note">
+    <p>
+      Both finders allow you to search and filter by chapter, CEFR level, learning aim and stage of lesson.<br>
+      Click any activity card to expand its full details and goals.
+    </p>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  Cambridge Handbooks for Language Teachers &nbsp;·&nbsp;
+  Cambridge University Press &nbsp;·&nbsp;
+  Interactive Platform
+</footer>
+
+</body>
+</html>
